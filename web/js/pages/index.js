@@ -21,6 +21,9 @@
         },
 
         onClearClicked:function () {
+            $("#info").html("");
+
+
             this.clearMap();
         },
 
@@ -35,7 +38,6 @@
                 "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers:'basic'});
 
 
-
             //var vectors = new OpenLayers.Layer.Vector("Vector Layer");
             var pointLayer = new OpenLayers.Layer.Vector("Point Layer");
 
@@ -48,14 +50,11 @@
             drawControl.activate();
 
 
-
-
-
             this.layers = {
-                points: pointLayer
+                points:pointLayer
             };
             this.mapControls = {
-                drawControl: drawControl
+                drawControl:drawControl
             };
             map.zoomToExtent(this.startingExtent);
 
@@ -65,56 +64,63 @@
             this.loadAllRoutes();
         },
 
-        loadAllRoutes: function() {
+        loadAllRoutes:function () {
 
             $.ajax({
-                url: "data/routeIDs.js",
+                url:"data/routeIDs.js",
                 dataType:"json",
                 success:$.proxy(this.onRouteIDsReturned, this),
-                error: function() {
+                error:function () {
                     console.error("Get locations returned an error, ", arguments);
                 }
             })
 
         },
 
-        onRouteIDsReturned: function(data) {
-            for(var id in data.routes) {
+        onRouteIDsReturned:function (data) {
+            for (var id in data.routes) {
                 this.addRoute(id);
             }
         },
 
-        pointsStyleMap: function () {
+        pointsStyleMap:function () {
             return new OpenLayers.StyleMap({
-                "default": new OpenLayers.Style({
-                    pointRadius: "${type}", // sized according to type attribute
-                    fillColor: "#ffcc66",
-                    strokeColor: "#ff9933",
-                    strokeWidth: 2,
-                    graphicZIndex: 1
+                "default":new OpenLayers.Style({
+                    pointRadius:"${type}", // sized according to type attribute
+                    fillColor:"#ffcc66",
+                    strokeColor:"#ff9933",
+                    strokeWidth:2,
+                    graphicZIndex:1
                 }),
-                "select": new OpenLayers.Style({
-                    fillColor: "#66ccff",
-                    strokeColor: "#FF0000",
-                    graphicZIndex: 2
+                "select":new OpenLayers.Style({
+                    fillColor:"#66ccff",
+                    strokeColor:"#FF0000",
+                    graphicZIndex:2
                 })
             });
         },
 
-        kmlRouteStyleMap: function () {
+        kmlRouteStyleMap:function () {
             return new OpenLayers.StyleMap({
-                "default": new OpenLayers.Style({
-                    fillColor: "#ffcc66",
-                    strokeColor: "#e1e1e1",
-                    strokeWidth: 1,
-                    graphicZIndex: 1
+                "default":new OpenLayers.Style({
+                    fillColor:"#ffcc66",
+                    strokeColor:"#e1e1e1",
+                    strokeWidth:1,
+                    graphicZIndex:1
                 }),
-                "select": new OpenLayers.Style({
-                    fillColor: "#66ccff",
-                    strokeColor: "#000",
+                "select":new OpenLayers.Style({
+                    fillColor:"#66ccff",
+                    strokeColor:"#000",
+                    strokeWidth:1,
+                    graphicZIndex:2
+                }),
+                "highlight":new OpenLayers.Style({
+                    fillColor:"#66ccff",
+                    strokeColor:"#0015FF",
                     strokeWidth: 2,
-                    graphicZIndex: 2
+                    graphicZIndex:2
                 })
+
             });
         },
 
@@ -126,7 +132,7 @@
 
             if (!this.kmlRoutes[route]) {
                 this.kmlRoutes[route] = new OpenLayers.Layer.Vector("KML", {
-                    styleMap: styleMap,
+                    styleMap:styleMap,
                     strategies:[new OpenLayers.Strategy.Fixed()],
                     protocol:new OpenLayers.Protocol.HTTP({
                         url:"data/routekml/" + route + ".kml",
@@ -147,93 +153,100 @@
             var feature = evt.feature;
             console.debug('map clicked ', arguments);
 
-//            var filt =  new OpenLayers.Filter.Spatial({
-//                type: OpenLayers.Filter.Spatial.DWITHIN,
-//                value: feature.geometry,
-//
-////                type: OpenLayers.Filter.Spatial.BBOX,
-////                value: feature.geometry.getBounds(),
-//
-//                distanceUnits: 'm',
-//                distance: 10
-//            });
-
             //is 'f' in range of 'feature'
-            var distanceThreshold = 0.0012;
-            var inRange = function(src, dest) {
+            var distanceThreshold = 0.005;      //todo: tie this to something practical
+            var inRange = function (src, dest) {
                 var dist = src.geometry.distanceTo(dest.geometry);
-                console.debug('distance is ', dist);
+                //console.debug('distance is ', dist);
                 return (dist <= distanceThreshold)
             };
 
-            var selectFeature = function(layer, feat) {
+            var selectFeature = function (layer, feat) {
                 layer.selectedFeatures.push(feat);
                 feat.renderIntent = "select";
             };
 
-            for(var id in this.kmlRoutes) {
+            var validFeatures = [];
+
+            for (var id in this.kmlRoutes) {
                 var layer = this.kmlRoutes[id];
                 if (!layer || (layer.features.length == 0)) {
                     continue;
                 }
 //                layer.filter = filt;
 
-                for(var fid in layer.features) {
+                for (var fid in layer.features) {
                     var feat = layer.features[fid];
-                    //if (filt.evaluate(feat)) {
+                    feat.renderIntent = "default";
                     if (inRange(feat, feature)) {
-                        console.debug('selecting feature ', fid);
                         selectFeature(layer, feat);
+                        validFeatures.push({layer:layer, feature:feat});
                     }
                 }
                 layer.redraw();
-                //layer.refresh({force: true});
             }
-//            layer.filter = new OpenLayers.Filter.Spatial({
-//                type: OpenLayers.Filter.Spatial.INTERSECTS,
-//                value: event.feature.geometry
-//            });
+
+            this.createSelectionDivs(validFeatures);
 
 
-
-
-
-
-
-//            $.ajax({
-//                url:"http://www3.septa.org/hackathon/locations/get_locations.php?lon=-75.161&lat=39.95205&callback=?",
-//
-//                dataType:"jsonp",
-//                success:$.proxy(this.onLocationsReturned, this),
-//                error: function() {
-//                    console.error("Get locations returned an error, ", arguments);
-//                }
-//            });
         },
 
-        onLocationsReturned:function (data) {
-            console.debug('data returned !', data);
-//
-//
-//            location_id
-//
-//            location_name
-//            location_type :  bus_stops  trolley_stops
-//            location_lat
-//            location_lon
-//            distance
+        _lastHighlighted: null,
 
-//            function (data) {
-//                                $.each(data, function (i, item) {
-//                                    var locname = item.location_name;
-//                                    if (item.location_type == 'perk_locations') {
-//
-//                                        if (item.location_data != null)
-//                                            alert(item.location_data.location_id + ' ' + item.location_data.location_name);
-//                                    }
-//
-//                                });
-//                            }
+        /**
+         * Assumes you know what render intent you want the old feature to revert to!
+         * @param feature
+         * @param resetTo
+         */
+        highlightFeature: function(feature, resetTo) {
+            if (this._lastHighlighted) {
+                this._lastHighlighted.renderIntent = resetTo;
+                this._lastHighlighted.layer.redraw();
+                this._lastHighlighted = null;
+            }
+
+            feature.renderIntent = "highlight";
+            this._lastHighlighted = feature;
+            feature.layer.redraw();
+        },
+
+
+        /**
+         * Takes an array of {layer: null, feature: null} items and
+         * redraws an area of the screen to have interactive divs for each
+         * should:
+         *  highlight on hover?
+         *  show route name?
+         * @param items
+         */
+        createSelectionDivs:function (items) {
+            var $node = $("#info").find(".highlighted");
+            var map = this.map;
+
+
+            for (var id in items) {
+                var item = items[id];
+                var name = item.feature.attributes.name;
+                var h = "<div>" +
+                    "<span class='name'>" + name + "</span>" +
+                    "<button class='zoom'>Zoom to Route</button>" +
+                    "</div>";
+
+                var $h = $(h);
+                $h.appendTo($node);
+
+                //CONTEXT is page!
+                var highlightFn = $.proxy(this.highlightFeature, this);
+
+                $($h).find(".zoom").on("click", $.proxy(function () {
+                    //CONTEXT is "item"
+
+                    console.debug('zooming to item ', this.feature.attributes.name);
+                    highlightFn(this.feature);
+                    map.zoomToExtent(this.feature.geometry.getBounds());
+                }, item));
+            }
+
         },
 
 

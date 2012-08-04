@@ -22,7 +22,7 @@
 
         onClearClicked:function () {
             //clear all the buttons we've added
-            $("#info").html("");
+            $("#info .highlighted").html("");
 
             this.clearMap();
         },
@@ -227,6 +227,30 @@
             feature.layer.redraw();
         },
 
+        resolvePointToAddress:function (feature, callback) {
+            var pt = feature.geometry.getCentroid();
+
+            $.ajax({
+                //url:"http://maps.googleapis.com/maps/api/geocode/json?latlng=" + pt.y + "," + pt.x + "&sensor=false",
+                url: "http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Locators/ESRI_Geocode_USA/GeocodeServer/reverseGeocode?location=" + pt.x + "," + pt.y + "&distance=100&f=json",
+                dataType:"jsonp",
+                success:function (data) {
+                    try {
+                        if (callback) {
+                            callback(data);
+                        }
+                    }
+                    catch (e) {
+                        console.error("Error in callback ", e);
+                    }
+
+                },
+                error:function () {
+                    console.error("failed to resolve point ", arguments)
+                }
+            });
+        },
+
 
         /**
          * Takes an array of {layer: null, feature: null} items and
@@ -238,44 +262,56 @@
          * @param items
          */
         createSelectionDivs:function (feature, items) {
-
-
-            var $root = $("#info").find(".highlighted");
+            var $root = $("#info .highlighted");
             var map = this.map;
 
             var orig = "<div>" +
-                        "<span class='title'>Routes near "+"foo"+"</span>" +
-                        "<ul> </ul></div>";
+                "<span class='title'>Routes near (checking...) </span>" +
+                "<ul> </ul></div>";
 
             //better way to create and append a div, while retaining a reference to it?
             var $node = $(orig);
             $($node).appendTo($root);
 
+            var onAddressResolved = $.proxy(function (addresses) {
+                if (!addresses) {
+                    console.error("No addresses returned!");
+                }
+
+                var first = addresses.address ;//[0];
+                $($node).find('.title').html("Routes near " + first.Address);
+            }, this);
+            this.resolvePointToAddress(feature, onAddressResolved);
+
             var $list = $($node).find("ul");
 
+            if (!items || (items.length == 0)) {
+                var h = "<divNo routes found nearby</div>";
+                $(h).appendTo($list);
+            }
+            else {
+                for (var id in items) {
+                    var item = items[id];
+                    var name = item.feature.attributes.name;
+                    var h = "<div>" +
+                        "<span class='name'>" + name + "</span>" +
+                        "<button class='zoom'>Zoom to Route</button>" +
+                        "</div>";
 
+                    var $h = $(h);
+                    $h.appendTo($list);
 
-            for (var id in items) {
-                var item = items[id];
-                var name = item.feature.attributes.name;
-                var h = "<div>" +
-                    "<span class='name'>" + name + "</span>" +
-                    "<button class='zoom'>Zoom to Route</button>" +
-                    "</div>";
+                    //CONTEXT is page!
+                    var highlightFn = $.proxy(this.highlightFeature, this);
 
-                var $h = $(h);
-                $h.appendTo($list);
+                    $($h).find(".zoom").on("click", $.proxy(function () {
+                        //CONTEXT is "item"
 
-                //CONTEXT is page!
-                var highlightFn = $.proxy(this.highlightFeature, this);
-
-                $($h).find(".zoom").on("click", $.proxy(function () {
-                    //CONTEXT is "item"
-
-                    console.debug('zooming to item ', this.feature.attributes.name);
-                    highlightFn(this.feature, "select");
-                    map.zoomToExtent(this.feature.geometry.getBounds());
-                }, item));
+                        console.debug('zooming to item ', this.feature.attributes.name);
+                        highlightFn(this.feature, "select");
+                        map.zoomToExtent(this.feature.geometry.getBounds());
+                    }, item));
+                }
             }
 
         },

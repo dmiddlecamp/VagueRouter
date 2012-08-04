@@ -1,0 +1,14 @@
+notes
+	[ ] thumbnail of route?
+	[ ] show route name rendered html
+	[ ] show live buses on route?
+	
+	[ ] twitter bootstrap?
+	[ ] move rendered html off to side bar, wrap under map on small viewport
+	
+	
+	[ ] map
+		[ ] change basemap (set projection)
+		[ ] change drawn feature radius / style to match query area
+		[ ] zoom to bounds after second point?
+

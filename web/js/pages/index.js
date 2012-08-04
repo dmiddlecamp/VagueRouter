@@ -5,12 +5,23 @@
     };
     IndexConstructor.prototype = {
         startingExtent:new OpenLayers.Bounds(-75.442428588868, 39.783554077149, -74.893112182618, 40.195541381837),
+        routeNames:null,
+
+        bufferFeet: 1000,
+        bufferMapUnits: null,
 
         startup:function () {
             console.debug("Hello World!");
+            this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', 'degrees' ); //this.map.getUnits());
 
-            this.setupMap();
+
+            this.retrieveBaseLayer($.proxy(this.setupMap, this));
+
+            //this.setupMap();
             this.connectEvents();
+            this.getRouteNames();
+
+
 
             console.debug("Page done loading...");
         },
@@ -19,6 +30,25 @@
             $("#btnClear").on('click', $.proxy(this.onClearClicked, this));
 
         },
+
+        getRouteNames:function () {
+            console.debug('requesting route names file ');
+            $.ajax({
+                url:"data/routeNames.js",
+                dataType:"json",
+                success:$.proxy(this.onRouteNamesLoaded, this)
+            });
+        },
+        onRouteNamesLoaded:function (data) {
+            console.debug('route names returned ');
+            this.routeNames = {};
+            for (var idx in data.routeNames) {
+                var item = data.routeNames[idx];
+                //console.debug("adding route name ", item);
+                this.routeNames[item.route] = item;
+            }
+        },
+
 
         onClearClicked:function () {
             //clear all the buttons we've added
@@ -49,16 +79,51 @@
         },
 
 
-        setupMap:function () {
-            var map = new OpenLayers.Map('map');
-            var wms = new OpenLayers.Layer.WMS("OpenLayers WMS",
-                "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers:'basic'});
+        retrieveBaseLayer:function (callback) {
+            var layerURL = "http://services.arcgisonline.com/ArcGIS/rest/services/ESRI_Imagery_World_2D/MapServer";
+            $.ajax({
+                url:layerURL + "?f=json&pretty=true",
+                dataType:"jsonp",
+                success:$.proxy(function (layerInfo) {
+
+                    var baseLayer = new OpenLayers.Layer.ArcGISCache("AGSCache", layerURL, {
+                        layerInfo:layerInfo
+                    });
+
+                    var map = new OpenLayers.Map('map', {
+                        maxExtent:baseLayer.maxExtent,
+                        units:baseLayer.units,
+                        resolutions:baseLayer.resolutions,
+                        numZoomLevels:baseLayer.numZoomLevels,
+                        tileSize:baseLayer.tileSize,
+                        displayProjection:baseLayer.displayProjection
+                    });
+                    map.addLayers([baseLayer]);
+                    callback(map);
+
+                }, this)
+            });
+
+        },
+
+
+        setupMap:function (providedMap) {
+            var map = providedMap;
+            if (!map) {
+                map = new OpenLayers.Map('map');
+                var wms = new OpenLayers.Layer.WMS("OpenLayers WMS",
+                    "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers:'basic'});
+                map.addLayer(wms);
+            }
+            this.map = map;
 
 
             //var vectors = new OpenLayers.Layer.Vector("Vector Layer");
-            var pointLayer = new OpenLayers.Layer.Vector("Point Layer");
+            var pointLayer = new OpenLayers.Layer.Vector("Point Layer", {
+                styleMap:this.pointsStyleMap()
+            });
 
-            map.addLayers([wms, pointLayer]);
+            map.addLayers([ pointLayer]);
             map.addControl(new OpenLayers.Control.MousePosition());
 
             var drawControl = new OpenLayers.Control.DrawFeature(pointLayer, OpenLayers.Handler.Point);
@@ -77,7 +142,6 @@
 
             //TODO: draw feature control
             //map.events.register("click", map, $.proxy(this.onMapClicked, this));
-            this.map = map;
             this.loadAllRoutes();
         },
 
@@ -100,41 +164,84 @@
             }
         },
 
+        calculateRadiusPx:function (map, bufferUnits) {
+            if (!bufferUnits) {
+                return 0;
+            }
+
+            //buffer units had better be in map units.
+            var radius = bufferUnits / map.getResolution();
+            console.debug('calc radius returning ', radius);
+            return radius;
+        },
+
+        supported:function () {
+            return !!((typeof "OpenLayers" != "undefined") && (OpenLayers.INCHES_PER_UNIT));
+        },
+        convertTo:function (value, srcType, destType) {
+            if (!this.supported()) {
+                console.error("OpenLayers must be loaded for this library to work");
+            }
+
+//             srcType = this.coalesceType(srcType);
+//             destType = this.coalesceType(destType);
+
+            var inchesPerSrc = OpenLayers.INCHES_PER_UNIT[srcType];
+            var inchesPerDest = OpenLayers.INCHES_PER_UNIT[destType];
+            return ((value * inchesPerSrc) / inchesPerDest);
+        },
+
+
         pointsStyleMap:function () {
+            var that = this;
+
+            var determineRadius = function (f) {
+                return that.calculateRadiusPx(that.map, that.bufferMapUnits);
+            };
+            console.debug("converted value is ", that.bufferMapUnits);
+
+            //TODO: pointRadius with real distance
+
+
             return new OpenLayers.StyleMap({
-                "default":new OpenLayers.Style({
-                    pointRadius:"${type}", // sized according to type attribute
-                    fillColor:"#ffcc66",
-                    strokeColor:"#ff9933",
-                    strokeWidth:2,
-                    graphicZIndex:1
-                }),
-                "select":new OpenLayers.Style({
-                    fillColor:"#66ccff",
-                    strokeColor:"#FF0000",
-                    graphicZIndex:2
-                })
-            });
+                    "default":new OpenLayers.Style({
+                            pointRadius:"${radius}",
+                            fillColor:"#0015FF",
+                            strokeColor:"#333",
+                            strokeWidth:2,
+                            fillOpacity: 0.3,
+                            graphicZIndex:1
+                        },
+                        {
+                            context:{ radius:determineRadius }
+                        }),
+                    "select":new OpenLayers.Style({
+                        fillColor:"#66ccff",
+                        strokeColor:"#FF0000",
+                        graphicZIndex:2
+                    })
+                }
+            );
         },
 
         kmlRouteStyleMap:function () {
             return new OpenLayers.StyleMap({
                 "default":new OpenLayers.Style({
                     fillColor:"#ffcc66",
-                    strokeColor:"#e1e1e1",
+                    strokeColor:"#333", //near-black
                     strokeWidth:1,
                     graphicZIndex:1
                 }),
                 "select":new OpenLayers.Style({
                     fillColor:"#66ccff",
-                    strokeColor:"#000",
-                    strokeWidth:1,
+                    strokeColor:"#e1e1e1", //near-white
+                    strokeWidth:3,
                     graphicZIndex:2
                 }),
                 "highlight":new OpenLayers.Style({
                     fillColor:"#66ccff",
                     strokeColor:"#0015FF",
-                    strokeWidth:2,
+                    strokeWidth:3,
                     graphicZIndex:2
                 })
 
@@ -142,13 +249,14 @@
         },
 
 
-        kmlRoutes:{},
+        kmlRoutes:{
+        },
         addRoute:function (route) {
 
             var styleMap = this.kmlRouteStyleMap();
 
             if (!this.kmlRoutes[route]) {
-                this.kmlRoutes[route] = new OpenLayers.Layer.Vector("KML", {
+                this.kmlRoutes[route] = new OpenLayers.Layer.Vector(route, {
                     styleMap:styleMap,
                     strategies:[new OpenLayers.Strategy.Fixed()],
                     protocol:new OpenLayers.Protocol.HTTP({
@@ -171,7 +279,7 @@
             console.debug('map clicked ', arguments);
 
             //is 'f' in range of 'feature'
-            var distanceThreshold = 0.005;      //todo: tie this to something practical
+            var distanceThreshold = this.bufferMapUnits;      //todo: tie this to something practical
             var inRange = function (src, dest) {
                 var dist = src.geometry.distanceTo(dest.geometry);
                 //console.debug('distance is ', dist);
@@ -232,7 +340,7 @@
 
             $.ajax({
                 //url:"http://maps.googleapis.com/maps/api/geocode/json?latlng=" + pt.y + "," + pt.x + "&sensor=false",
-                url: "http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Locators/ESRI_Geocode_USA/GeocodeServer/reverseGeocode?location=" + pt.x + "," + pt.y + "&distance=100&f=json",
+                url:"http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Locators/ESRI_Geocode_USA/GeocodeServer/reverseGeocode?location=" + pt.x + "," + pt.y + "&distance=100&f=json",
                 dataType:"jsonp",
                 success:function (data) {
                     try {
@@ -278,7 +386,7 @@
                     console.error("No addresses returned!");
                 }
 
-                var first = addresses.address ;//[0];
+                var first = addresses.address;//[0];
                 $($node).find('.title').html("Routes near " + first.Address);
             }, this);
             this.resolvePointToAddress(feature, onAddressResolved);
@@ -292,9 +400,19 @@
             else {
                 for (var id in items) {
                     var item = items[id];
+
+                    var routeID = item.layer.name;
                     var name = item.feature.attributes.name;
-                    var h = "<div>" +
-                        "<span class='name'>" + name + "</span>" +
+                    var routeName = '';
+                    if (this.routeNames) {
+                        var routeInfo = this.routeNames[routeID];
+                        routeName = (routeInfo) ? routeInfo.name : '';
+                    }
+
+
+                    var h = "<div class='route'>" +
+                        "<span class='short_name'>" + name + "</span>" +
+                        "<span class='long_name'>" + routeName + "</span>" +
                         "<button class='zoom'>Zoom to Route</button>" +
                         "</div>";
 
@@ -318,11 +436,13 @@
 
 
         foo:'bar'
-    };
+    }
+    ;
 
     $(function () {
         VR.Pages.index = new IndexConstructor();
         VR.Pages.index.startup();
     });
 
-})();
+})
+    ();

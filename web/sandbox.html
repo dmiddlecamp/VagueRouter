@@ -18,19 +18,14 @@
         var obj = routeData[id];
         //console.debug(obj.route);
 
-        routeList.push(obj.route);
+        //{"data":"busroute","id":9721,"route":"NHSL","name":"69th St TC to Norristown TC","type":0}
+
+        routeList.push({route: obj.route, type: obj.type, name: obj.name});
+
 
         //routeList.push({ id: obj.route, short_name: obj.short_name, long_name: obj.long_name} );
     }
-    console.debug(routeList.join(','));
-
-
-    var data = {
-                "address":{ "Address":"1513 WESTBROOKE ST", "City":"LAWRENCE", "State":"KS", "Zip":"66047", "Loc_name":"Street_Address"},
-                "location":{"x":-95.272100979999948, "y":38.956018396000047, "spatialReference":{"wkid":4326}}
-            }
-
-            ;
+    console.debug(JSON.stringify(routeList));
 
 
 </script>

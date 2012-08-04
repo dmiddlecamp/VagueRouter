@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="864f967b-0178-486f-a8d9-df4b4b26726c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/data/routeNames.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/pages/index.js" afterPath="$PROJECT_DIR$/js/pages/index.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sandbox.html" afterPath="$PROJECT_DIR$/sandbox.html" />
     </list>
     <ignored path="web.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,7 +45,7 @@
       <file leaf-file-name="index.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/pages/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="209" column="45" selection-start="6894" selection-end="6894" vertical-scroll-proportion="0.53772455">
+            <state line="336" column="42" selection-start="11161" selection-end="11161" vertical-scroll-proportion="0.56435645">
               <folding />
             </state>
           </provider>
@@ -415,7 +411,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/pages/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="209" column="45" selection-start="6894" selection-end="6894" vertical-scroll-proportion="0.53772455">
+        <state line="336" column="42" selection-start="11161" selection-end="11161" vertical-scroll-proportion="0.56435645">
           <folding />
         </state>
       </provider>

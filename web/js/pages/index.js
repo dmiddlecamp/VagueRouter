@@ -324,6 +324,8 @@
          * @param resetTo
          */
         highlightFeature:function (feature, resetTo) {
+            this.map.resetLayersZIndex();
+
             if (this._lastHighlighted) {
                 this._lastHighlighted.renderIntent = resetTo;
                 this._lastHighlighted.layer.redraw();
@@ -332,6 +334,7 @@
 
             feature.renderIntent = "highlight";
             this._lastHighlighted = feature;
+            feature.layer.setZIndex(1000);
             feature.layer.redraw();
         },
 
@@ -428,6 +431,10 @@
                         console.debug('zooming to item ', this.feature.attributes.name);
                         highlightFn(this.feature, "select");
                         map.zoomToExtent(this.feature.geometry.getBounds());
+                    }, item));
+
+                    $($h).on("mouseover", $.proxy(function () {
+                        highlightFn(this.feature, "select");
                     }, item));
                 }
             }

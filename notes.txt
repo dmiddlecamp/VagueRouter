@@ -1,14 +1,16 @@
 notes
 	[ ] thumbnail of route?
-	[ ] show route name rendered html
+	[X] show route name rendered html
 	[ ] show live buses on route?
 	
-	[ ] twitter bootstrap?
-	[ ] move rendered html off to side bar, wrap under map on small viewport
+	[X] twitter bootstrap?
+	[X] move rendered html off to side bar, wrap under map on small viewport
 	
 	
 	[ ] map
-		[ ] change basemap (set projection)
-		[ ] change drawn feature radius / style to match query area
+		[X] change basemap (set projection)
+		[X] change drawn feature radius / style to match query area
 		[ ] zoom to bounds after second point?
+		[X] highlight on mouseover
+		[ ] bring selected route to the top of the z-index
 

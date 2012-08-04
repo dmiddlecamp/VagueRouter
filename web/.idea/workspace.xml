@@ -2,13 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="864f967b-0178-486f-a8d9-df4b4b26726c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/data/routeIDs.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/data/routes.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sandbox.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/pages/index.js" afterPath="$PROJECT_DIR$/js/pages/index.js" />
     </list>
     <ignored path="web.iws" />
@@ -49,19 +42,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="index.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/pages/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="30" selection-start="2114" selection-end="2114" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="routeIDs.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/data/routeIDs.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="188" column="28" selection-start="6038" selection-end="6038" vertical-scroll-proportion="0.60535717">
               <folding />
             </state>
           </provider>
@@ -85,8 +69,8 @@
         <option value="$PROJECT_DIR$/data/routes.json.js" />
         <option value="$PROJECT_DIR$/data/routes.json" />
         <option value="$PROJECT_DIR$/sandbox.html" />
-        <option value="$PROJECT_DIR$/js/pages/index.js" />
         <option value="$PROJECT_DIR$/data/routeIDs.js" />
+        <option value="$PROJECT_DIR$/js/pages/index.js" />
       </list>
     </option>
   </component>
@@ -363,16 +347,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/pages/index.js">
+    <entry file="file://$PROJECT_DIR$/data/routeIDs.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="30" selection-start="2114" selection-end="2114" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/routeIDs.js">
+    <entry file="file://$PROJECT_DIR$/js/pages/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+        <state line="188" column="28" selection-start="6038" selection-end="6038" vertical-scroll-proportion="0.60535717">
           <folding />
         </state>
       </provider>

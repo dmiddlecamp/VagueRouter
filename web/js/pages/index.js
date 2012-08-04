@@ -35,37 +35,34 @@
                 "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers:'basic'});
 
 
-            var vectors = new OpenLayers.Layer.Vector("Vector Layer");
 
-            map.addLayers([wms, vectors]);
+            //var vectors = new OpenLayers.Layer.Vector("Vector Layer");
+            var pointLayer = new OpenLayers.Layer.Vector("Point Layer");
+
+            map.addLayers([wms, pointLayer]);
             map.addControl(new OpenLayers.Control.MousePosition());
-//            map.addControl(new OpenLayers.Control.EditingToolbar(vectors));
 
-//            var selectOptions = {
-//                hover:true,
-//                onSelect:function() { console.debug('selected'); }
-//            };
-//            var select = new OpenLayers.Control.SelectFeature(vectors, selectOptions);
-//            map.addControl(select);
-//            select.activate();
+            var drawControl = new OpenLayers.Control.DrawFeature(pointLayer, OpenLayers.Handler.Point);
+            drawControl.events.register('featureadded', this, this.onMapClicked);
+            map.addControl(drawControl);
+            drawControl.activate();
 
-//            updateFormats();
 
+
+
+
+            this.layers = {
+                points: pointLayer
+            };
+            this.mapControls = {
+                drawControl: drawControl
+            };
             map.zoomToExtent(this.startingExtent);
 
             //TODO: draw feature control
-            map.events.register("click", map, $.proxy(this.onMapClicked, this));
-
-            //map.setCenter(new OpenLayers.LonLat(0, 0), 1);
+            //map.events.register("click", map, $.proxy(this.onMapClicked, this));
             this.map = map;
-
             this.loadAllRoutes();
-
-            //this.addRoute(3);
-            //this.addRoute(5);
-           //this.addRoute(10);
-
-
         },
 
         loadAllRoutes: function() {
@@ -87,12 +84,49 @@
             }
         },
 
+        pointsStyleMap: function () {
+            return new OpenLayers.StyleMap({
+                "default": new OpenLayers.Style({
+                    pointRadius: "${type}", // sized according to type attribute
+                    fillColor: "#ffcc66",
+                    strokeColor: "#ff9933",
+                    strokeWidth: 2,
+                    graphicZIndex: 1
+                }),
+                "select": new OpenLayers.Style({
+                    fillColor: "#66ccff",
+                    strokeColor: "#FF0000",
+                    graphicZIndex: 2
+                })
+            });
+        },
+
+        kmlRouteStyleMap: function () {
+            return new OpenLayers.StyleMap({
+                "default": new OpenLayers.Style({
+                    fillColor: "#ffcc66",
+                    strokeColor: "#e1e1e1",
+                    strokeWidth: 1,
+                    graphicZIndex: 1
+                }),
+                "select": new OpenLayers.Style({
+                    fillColor: "#66ccff",
+                    strokeColor: "#000",
+                    strokeWidth: 2,
+                    graphicZIndex: 2
+                })
+            });
+        },
+
 
         kmlRoutes:{},
         addRoute:function (route) {
 
+            var styleMap = this.kmlRouteStyleMap();
+
             if (!this.kmlRoutes[route]) {
                 this.kmlRoutes[route] = new OpenLayers.Layer.Vector("KML", {
+                    styleMap: styleMap,
                     strategies:[new OpenLayers.Strategy.Fixed()],
                     protocol:new OpenLayers.Protocol.HTTP({
                         url:"data/routekml/" + route + ".kml",
@@ -109,10 +143,62 @@
         },
 
 
-        onMapClicked:function (e) {
-            var layerPx = this.map.getLayerPxFromViewPortPx(e.xy);
-            var lonLat = this.map.getLonLatFromLayerPx(layerPx);
-            console.debug('map clicked ', lonLat);
+        onMapClicked:function (evt) {
+            var feature = evt.feature;
+            console.debug('map clicked ', arguments);
+
+//            var filt =  new OpenLayers.Filter.Spatial({
+//                type: OpenLayers.Filter.Spatial.DWITHIN,
+//                value: feature.geometry,
+//
+////                type: OpenLayers.Filter.Spatial.BBOX,
+////                value: feature.geometry.getBounds(),
+//
+//                distanceUnits: 'm',
+//                distance: 10
+//            });
+
+            //is 'f' in range of 'feature'
+            var distanceThreshold = 0.0012;
+            var inRange = function(src, dest) {
+                var dist = src.geometry.distanceTo(dest.geometry);
+                console.debug('distance is ', dist);
+                return (dist <= distanceThreshold)
+            };
+
+            var selectFeature = function(layer, feat) {
+                layer.selectedFeatures.push(feat);
+                feat.renderIntent = "select";
+            };
+
+            for(var id in this.kmlRoutes) {
+                var layer = this.kmlRoutes[id];
+                if (!layer || (layer.features.length == 0)) {
+                    continue;
+                }
+//                layer.filter = filt;
+
+                for(var fid in layer.features) {
+                    var feat = layer.features[fid];
+                    //if (filt.evaluate(feat)) {
+                    if (inRange(feat, feature)) {
+                        console.debug('selecting feature ', fid);
+                        selectFeature(layer, feat);
+                    }
+                }
+                layer.redraw();
+                //layer.refresh({force: true});
+            }
+//            layer.filter = new OpenLayers.Filter.Spatial({
+//                type: OpenLayers.Filter.Spatial.INTERSECTS,
+//                value: event.feature.geometry
+//            });
+
+
+
+
+
+
 
 //            $.ajax({
 //                url:"http://www3.septa.org/hackathon/locations/get_locations.php?lon=-75.161&lat=39.95205&callback=?",

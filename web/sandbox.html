@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+</head>
+<script src="js/jquery-1.7.2.min.js"></script>
+<script src="data/routes.json"></script>
+<script>
+    //var routeData
+
+    console.debug(routeData);
+
+    var routeList = [];
+
+    for(var id in routeData) {
+        //console.debug('id is ', id);
+        var obj = routeData[id];
+        //console.debug(obj.route);
+
+        routeList.push(obj.route);
+
+        //routeList.push({ id: obj.route, short_name: obj.short_name, long_name: obj.long_name} );
+    }
+    console.debug(routeList.join(','));
+
+
+</script>
+<body>
+
+</body>
+</html>

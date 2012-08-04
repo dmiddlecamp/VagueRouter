@@ -12,5 +12,5 @@ notes
 		[X] change drawn feature radius / style to match query area
 		[ ] zoom to bounds after second point?
 		[X] highlight on mouseover
-		[ ] bring selected route to the top of the z-index
+		[X] bring selected route to the top of the z-index
 

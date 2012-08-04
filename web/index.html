@@ -27,43 +27,81 @@
             height: 800px;
             border: 1px solid #CCC;
         }
-        /* FIX FOR BOOTSTRAP + OPENLAYERS */
-        img { max-width:none; }
+
+        #info {
+            height: 800px;
+            overflow: scroll;
+
+        }
+
+            /* FIX FOR BOOTSTRAP + OPENLAYERS */
+        img {
+            max-width: none;
+        }
 
         .route {
             border: 1px solid #ccc;
 
         }
-        .route .short_name {}
-        .route .long_name {}
-        .route .zoom {}
+
+        .route:hover {
+            border: 1px solid #0015FF;
+        }
+
+        .route .short_name {
+
+        }
+
+        .route .long_name {
+            float: right;
+        }
+
+        .route .controls {
+            clear: both;
+        }
+
+        .route .controls .zoom {
+        }
+
+        .route .section {
+
+        }
+
+        .route .section .title {
+            font-size: 14pt;
+            font-weight: bold;
+
+        }
+
+        .route .schedule {
+
+        }
     </style>
 </head>
 <body>
-
-<div class="row-fluid">
-    <div class="span8">
-        <div id="map"></div>
-    </div>
-    <div class="span4">
-
-        <div id="controls">
-            <ul>
-                <li><button id="btnClear">Clear Map</button></li>
-            </ul>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span8">
+            <div id="map"></div>
         </div>
-        <div id="info">
-            <ul class="highlighted">
-            </ul>
+        <div class="span4 sidebar">
+
+            <div id="controls">
+                <ul>
+                    <li>
+                        <button id="btnClear">Clear Map</button>
+                    </li>
+                </ul>
+            </div>
+            <div id="info">
+                <ul class="highlighted">
+                </ul>
+            </div>
+
+
         </div>
-
-
     </div>
 </div>
-
-
-
-
 
 
 </body>

@@ -7,12 +7,12 @@
         startingExtent:new OpenLayers.Bounds(-75.442428588868, 39.783554077149, -74.893112182618, 40.195541381837),
         routeNames:null,
 
-        bufferFeet: 1000,
-        bufferMapUnits: null,
+        bufferFeet:1000,
+        bufferMapUnits:null,
 
         startup:function () {
             console.debug("Hello World!");
-            this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', 'degrees' ); //this.map.getUnits());
+            this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', 'degrees'); //this.map.getUnits());
 
 
             this.retrieveBaseLayer($.proxy(this.setupMap, this));
@@ -20,7 +20,6 @@
             //this.setupMap();
             this.connectEvents();
             this.getRouteNames();
-
 
 
             console.debug("Page done loading...");
@@ -87,7 +86,8 @@
                 success:$.proxy(function (layerInfo) {
 
                     var baseLayer = new OpenLayers.Layer.ArcGISCache("AGSCache", layerURL, {
-                        layerInfo:layerInfo
+                        layerInfo:layerInfo,
+                        transitionEffect:'resize'
                     });
 
                     var map = new OpenLayers.Map('map', {
@@ -112,7 +112,10 @@
             if (!map) {
                 map = new OpenLayers.Map('map');
                 var wms = new OpenLayers.Layer.WMS("OpenLayers WMS",
-                    "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers:'basic'});
+                    "http://vmap0.tiles.osgeo.org/wms/vmap0?", {
+                        layers:'basic',
+                        transitionEffect:'resize'
+                    });
                 map.addLayer(wms);
             }
             this.map = map;
@@ -209,7 +212,7 @@
                             fillColor:"#0015FF",
                             strokeColor:"#333",
                             strokeWidth:2,
-                            fillOpacity: 0.3,
+                            fillOpacity:0.3,
                             graphicZIndex:1
                         },
                         {
@@ -312,9 +315,35 @@
             }
 
             this.createSelectionDivs(feature, validFeatures);
+            this.panZoomAroundQuery(feature);
 
 
         },
+
+
+        extendBounds:function (bounds, buffer) {
+            bounds.top += buffer * 1;
+            bounds.left -= buffer * 1;
+            bounds.bottom -= buffer * 1;
+            bounds.right += buffer * 1;
+            return bounds;
+        },
+
+
+        /**
+         * Creates a bounding box around our query point that won't necessarily encompass
+         * the entirety of the routes we got
+         */
+        panZoomAroundQuery:function (feature) {
+            var bounds = feature.geometry.getBounds();
+            console.debug("feature bounds are ", bounds);
+
+            bounds = this.extendBounds(bounds, this.bufferMapUnits * 4);
+
+            console.debug("zooming to ", bounds);
+            this.map.zoomToExtent(bounds);
+        },
+
 
         _lastHighlighted:null,
 
@@ -377,7 +406,7 @@
             var map = this.map;
 
             var orig = "<div>" +
-                "<span class='title'>Routes near (checking...) </span>" +
+                "<span class='reverseAddress'>Routes near (checking...) </span>" +
                 "<ul> </ul></div>";
 
             //better way to create and append a div, while retaining a reference to it?
@@ -390,7 +419,7 @@
                 }
 
                 var first = addresses.address;//[0];
-                $($node).find('.title').html("Routes near " + first.Address);
+                $($node).find('.reverseAddress').html("Routes near " + first.Address);
             }, this);
             this.resolvePointToAddress(feature, onAddressResolved);
 
@@ -413,11 +442,28 @@
                     }
 
 
-                    var h = "<div class='route'>" +
-                        "<span class='short_name'>" + name + "</span>" +
-                        "<span class='long_name'>" + routeName + "</span>" +
-                        "<button class='zoom'>Zoom to Route</button>" +
+                    var h = "" +
+                        "<div class='route'>" +
+                        " <div class='section'> " +
+                        "  <div class='title'>" +
+                        "   <span class='short_name'>" + name + "</span>" +
+                        "  </div>" +
+                        "  <span class='long_name'>" + routeName + "</span>" +
+                        "   <div class='controls'>" +
+                        "    " +
+                        "  <div class='btn-group'>" +
+                        "     <button class='btn btn-info zoom'><i class='icon-zoom-in'></i>Zoom</button>" +
+                        "     <button class='btn buses'><i class='icon-eye-open'></i>Buses</button>" +
+                        "     <button class='btn schedule'><i class='icon-time'></i>Schedule</button>" +
+                        "     </div>" +
+                        "   </div>" +
+//                        "   <div class='section'>" +
+//                        "    <span class='title'>Schedule</span>" +
+//                        "    <div class='schedule'>loading...</div>" +
+//                        "   </div>" +
+                        " </div>" +
                         "</div>";
+
 
                     var $h = $(h);
                     $h.appendTo($list);

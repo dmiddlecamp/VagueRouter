@@ -21,14 +21,31 @@
         },
 
         onClearClicked:function () {
+            //clear all the buttons we've added
             $("#info").html("");
-
 
             this.clearMap();
         },
 
         clearMap:function () {
             console.debug("clear map clicked");
+
+            //destroy all the points we've drawn
+            this.layers.points.destroyFeatures();
+
+            //RESET ALL SELECTED / HIGHLIGHTED ROUTES
+            this._lastHighlighted = null;
+            for (var id in this.kmlRoutes) {
+                var layer = this.kmlRoutes[id];
+                if (!layer || (layer.features.length == 0)) {
+                    continue;
+                }
+                for (var fid in layer.features) {
+                    var feat = layer.features[fid];
+                    feat.renderIntent = "default";
+                }
+                layer.redraw();
+            }
         },
 
 
@@ -117,7 +134,7 @@
                 "highlight":new OpenLayers.Style({
                     fillColor:"#66ccff",
                     strokeColor:"#0015FF",
-                    strokeWidth: 2,
+                    strokeWidth:2,
                     graphicZIndex:2
                 })
 
@@ -177,7 +194,7 @@
 
                 for (var fid in layer.features) {
                     var feat = layer.features[fid];
-                    feat.renderIntent = "default";
+                    //feat.renderIntent = "default";
                     if (inRange(feat, feature)) {
                         selectFeature(layer, feat);
                         validFeatures.push({layer:layer, feature:feat});
@@ -186,19 +203,19 @@
                 layer.redraw();
             }
 
-            this.createSelectionDivs(validFeatures);
+            this.createSelectionDivs(feature, validFeatures);
 
 
         },
 
-        _lastHighlighted: null,
+        _lastHighlighted:null,
 
         /**
          * Assumes you know what render intent you want the old feature to revert to!
          * @param feature
          * @param resetTo
          */
-        highlightFeature: function(feature, resetTo) {
+        highlightFeature:function (feature, resetTo) {
             if (this._lastHighlighted) {
                 this._lastHighlighted.renderIntent = resetTo;
                 this._lastHighlighted.layer.redraw();
@@ -217,11 +234,25 @@
          * should:
          *  highlight on hover?
          *  show route name?
+         * @param feature - originally drawn point
          * @param items
          */
-        createSelectionDivs:function (items) {
-            var $node = $("#info").find(".highlighted");
+        createSelectionDivs:function (feature, items) {
+
+
+            var $root = $("#info").find(".highlighted");
             var map = this.map;
+
+            var orig = "<div>" +
+                        "<span class='title'>Routes near "+"foo"+"</span>" +
+                        "<ul> </ul></div>";
+
+            //better way to create and append a div, while retaining a reference to it?
+            var $node = $(orig);
+            $($node).appendTo($root);
+
+            var $list = $($node).find("ul");
+
 
 
             for (var id in items) {
@@ -233,7 +264,7 @@
                     "</div>";
 
                 var $h = $(h);
-                $h.appendTo($node);
+                $h.appendTo($list);
 
                 //CONTEXT is page!
                 var highlightFn = $.proxy(this.highlightFeature, this);
@@ -242,7 +273,7 @@
                     //CONTEXT is "item"
 
                     console.debug('zooming to item ', this.feature.attributes.name);
-                    highlightFn(this.feature);
+                    highlightFn(this.feature, "select");
                     map.zoomToExtent(this.feature.geometry.getBounds());
                 }, item));
             }

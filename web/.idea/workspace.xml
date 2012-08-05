@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="864f967b-0178-486f-a8d9-df4b4b26726c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/pages/index.js" afterPath="$PROJECT_DIR$/js/pages/index.js" />
     </list>
     <ignored path="web.iws" />
@@ -46,7 +45,7 @@
       <file leaf-file-name="index.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/pages/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="455" column="79" selection-start="15678" selection-end="15678" vertical-scroll-proportion="0.31377247">
+            <state line="265" column="44" selection-start="9225" selection-end="9225" vertical-scroll-proportion="0.7326733">
               <folding />
             </state>
           </provider>
@@ -412,7 +411,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/pages/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="455" column="79" selection-start="15678" selection-end="15678" vertical-scroll-proportion="0.31377247">
+        <state line="265" column="44" selection-start="9225" selection-end="9225" vertical-scroll-proportion="0.7326733">
           <folding />
         </state>
       </provider>

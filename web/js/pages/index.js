@@ -9,10 +9,14 @@
 
         bufferFeet:1000,
         bufferMapUnits:null,
+        /**
+         * our map might be in 'meters', but we need to pass 'degrees' when we're converting distance
+         */
+        mapUnitsForConverting:"degrees",
 
         startup:function () {
             console.debug("Hello World!");
-            this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', 'degrees'); //this.map.getUnits());
+            this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', this.mapUnitsForConverting); //this.map.getUnits());
 
 
             this.retrieveBaseLayer($.proxy(this.setupMap, this));
@@ -79,7 +83,7 @@
 
 
         retrieveBaseLayer:function (callback) {
-            var layerURL = "http://services.arcgisonline.com/ArcGIS/rest/services/ESRI_Imagery_World_2D/MapServer";
+            var layerURL = "http://services.arcgisonline.com/ArcGIS/rest/services/ESRI_StreetMap_World_2D/MapServer";
             $.ajax({
                 url:layerURL + "?f=json&pretty=true",
                 dataType:"jsonp",
@@ -197,7 +201,6 @@
 
         pointsStyleMap:function () {
             var that = this;
-
             var determineRadius = function (f) {
                 return that.calculateRadiusPx(that.map, that.bufferMapUnits);
             };
@@ -228,25 +231,45 @@
         },
 
         kmlRouteStyleMap:function () {
+            var that = this;
+            var minimumWidth = 5;
+            var streetFeet = 30;
+            var streetMapUnits = this.convertTo(streetFeet, 'ft', this.mapUnitsForConverting); //this.map.getUnits());
+            var determineRadius = function (f) {
+                return Math.max(minimumWidth,
+                    that.calculateRadiusPx(that.map, streetMapUnits)
+                );
+            };
+
+            console.debug("converted value is ", that.bufferMapUnits);
+
             return new OpenLayers.StyleMap({
                 "default":new OpenLayers.Style({
-                    fillColor:"#ffcc66",
-                    strokeColor:"#333", //near-black
-                    strokeWidth:1,
-                    graphicZIndex:1
-                }),
+                        fillColor:"#ffcc66",
+                        strokeColor:"#FFF", //near-white
+                        strokeWidth:"${radius}", //tied to 'streetFeet'
+                        graphicZIndex:1,
+                        opacity: 0.2
+                    },
+                    {context:{ radius:determineRadius }}
+                ),
                 "select":new OpenLayers.Style({
-                    fillColor:"#66ccff",
-                    strokeColor:"#e1e1e1", //near-white
-                    strokeWidth:3,
-                    graphicZIndex:2
-                }),
+                        fillColor:"#66ccff",
+                        strokeColor:"#333", //near-black
+                        strokeWidth:"${radius}", //tied to 'streetFeet'
+                        graphicZIndex:2
+                    },
+                    {context:{ radius:determineRadius }}
+                ),
                 "highlight":new OpenLayers.Style({
-                    fillColor:"#66ccff",
-                    strokeColor:"#0015FF",
-                    strokeWidth:3,
-                    graphicZIndex:2
-                })
+                        fillColor:"#66ccff",
+                        strokeColor:"#30C607", //green!!
+                        strokeWidth:"${radius}", //tied to 'streetFeet'
+                        graphicZIndex:2,
+                        opacity:0.5
+                    },
+                    {context:{ radius:determineRadius }}
+                )
 
             });
         },
@@ -407,6 +430,7 @@
 
             var orig = "<div>" +
                 "<span class='reverseAddress'>Routes near (checking...) </span>" +
+                "<span class='badge badge-info'>items.length</span>" +
                 "<ul> </ul></div>";
 
             //better way to create and append a div, while retaining a reference to it?
@@ -452,9 +476,9 @@
                         "   <div class='controls'>" +
                         "    " +
                         "  <div class='btn-group'>" +
-                        "     <button class='btn btn-info zoom'><i class='icon-zoom-in'></i>Zoom</button>" +
-                        "     <button class='btn buses'><i class='icon-eye-open'></i>Buses</button>" +
-                        "     <button class='btn schedule'><i class='icon-time'></i>Schedule</button>" +
+                        "     <button class='btn btn-info zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
+                        "     <button class='btn buses'><i class='icon-eye-open'></i> Buses</button>" +
+                        "     <button class='btn schedule'><i class='icon-time'></i> Schedule</button>" +
                         "     </div>" +
                         "   </div>" +
 //                        "   <div class='section'>" +

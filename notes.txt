@@ -7,6 +7,7 @@ notes
 	
 	[ ] async kml layer rendering (so page loads faster), show progress bar / do deferred checking?
 		[ ] show progress bar?
+		
 	[ ] show bus alerts / detours on route info widget?
 	[ ] geolocation api
 		[ ] jump to current location button?
@@ -22,11 +23,11 @@ notes
 		[ ] zoom to bounds after second point?
 		[X] highlight on mouseover
 		[X] bring selected route to the top of the z-index
-		[ ] clear live buses on map clear
+		[X] clear live buses on map clear
 		[ ] update buses periodically?
 		[ ] get bus schedules
 		[ ] add popup feature for bus markers
-		[ ] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
+		[X] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
 		
 		
 	pipedream goals:

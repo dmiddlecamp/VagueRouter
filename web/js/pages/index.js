@@ -79,6 +79,8 @@
                 }
                 layer.redraw();
             }
+
+            this.clearAllLiveRoutes();
         },
 
 
@@ -399,6 +401,19 @@
 
 
         liveRoutes:{},
+        clearAllLiveRoutes: function() {
+            if (this.liveRoutes) {
+                for (var id in this.liveRoutes) {
+                    var layer = this.liveRoutes[id];
+                    if (layer) {
+                        this.map.removeLayer(layer);
+                        this.liveRoutes[id] = null;
+                    }
+                    delete this.liveRoutes[id];
+                }
+            }
+        },
+
         toggleLiveRoute:function (routeID, active) {
             if (!active) {
                 console.debug('removing layer');

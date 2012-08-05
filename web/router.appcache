@@ -141,3 +141,7 @@ data/routekml/C.kml
 data/routekml/G.kml
 data/routekml/L.kml
 data/routekml/MFO.kml
+
+js/jquery-1.7.2.min.js
+js/OpenLayers.js
+js/bootstrap.min.js

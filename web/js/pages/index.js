@@ -15,7 +15,8 @@
         mapUnitsForConverting:"degrees",
 
         missingRoutes:",0,4,16,41,45,49,51,63,69,72,74,76,81,82,83,85,86,87,100,121,122,133,135,136,137,138,",
-
+        routeZIndex: 1000,
+        markerZIndex: 1020,
 
         startup:function () {
             console.debug("Hello World!");
@@ -453,7 +454,7 @@
          * @param feature
          * @param resetTo
          */
-        highlightFeature:function (feature, resetTo) {
+        highlightFeature:function (routeID, feature, resetTo) {
             this.map.resetLayersZIndex();
 
             if (this._lastHighlighted) {
@@ -464,8 +465,15 @@
 
             feature.renderIntent = "highlight";
             this._lastHighlighted = feature;
-            feature.layer.setZIndex(1000);
+            feature.layer.setZIndex(this.routeZIndex);
             feature.layer.redraw();
+
+
+            //fix the marker z-index
+            if (this.liveRoutes[routeID]) {
+                 this.liveRoutes[routeID].setZIndex(this.markerZIndex);     //these should be above the routes.
+                 this.liveRoutes[routeID].redraw();
+             }
         },
 
 
@@ -556,8 +564,11 @@
             if (data && (data.bus)) {
 
                 var layer = new OpenLayers.Layer.Markers(routeID);
+
+
                 this.liveRoutes[routeID] = layer;
                 this.map.addLayer(layer);
+                layer.setZIndex(this.markerZIndex);     //these should be above the routes.
 
                 for (var id in data.bus) {
                     var bus = data.bus[id];
@@ -682,7 +693,7 @@
 
                         $($h).find(".zoom").on("click", function () {
                             //console.debug('zooming to item ', item.feature.attributes.name);
-                            highlightFn(item.feature, "select");
+                            highlightFn(busRouteID, item.feature, "select");
                             map.zoomToExtent(item.feature.geometry.getBounds());
                         });
                         $($h).find(".buses").on("click", function () {
@@ -694,7 +705,7 @@
                             $(this).toggleClass(activeClass, !isActive);
                         });
                         $($h).on("mouseover", function () {
-                            highlightFn(item.feature, "select");
+                            highlightFn(busRouteID, item.feature, "select");
                         });
                     })(route, routeID);
 

@@ -1,14 +1,15 @@
 notes
 	[X] show route name rendered html
 	[x] show buses on route?
+		[x] buses should be above highlighted route
 	
 	[X] twitter bootstrap?
 	[X] move rendered html off to side bar, wrap under map on small viewport
+	[ ] accordian hide previous point / routes?
 	
 	[X] show progress bar so we perceive the page to be loading faster...
-		[x] don't close modal dialog until base layer is also loaded...
-	
-	[ ] async kml layer rendering (so page loads faster), show progress bar / do deferred checking?
+		[x] don't close modal dialog until base layer is also loaded...	
+		---[ ] async kml layer rendering (so page loads faster), show progress bar / do deferred checking?
 		
 	[X] html5 application manifest to cache kml / data files
 	[X] don't request missing routes
@@ -16,7 +17,7 @@ notes
 	[ ] show bus alerts / detours on route info widget?
 	[ ] geolocation api
 		[ ] jump to current location button?
-	[ ] change draw point bubble to reflect search radius
+	[X] change draw point bubble to reflect search radius
 		[ ] adjustable search radius?
 	[ ] page header / hero -- showing what this is / what it's doing?
 	
@@ -27,13 +28,13 @@ notes
 	[ ] map
 		[X] change basemap (set projection)
 		[X] change drawn feature radius / style to match query area
-		[ ] zoom to bounds after second point?
+		---[ ] zoom to bounds after second point?
 		[X] highlight on mouseover
 		[X] bring selected route to the top of the z-index
 		[X] clear live buses on map clear
 		[ ] update buses periodically?
 
-		[ ] add popup feature for bus markers
+		[ ] add popup / click feature for bus markers?  (or auto-show popup?)
 		[X] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
 		
 		

@@ -15,8 +15,8 @@
         mapUnitsForConverting:"degrees",
 
         missingRoutes:",0,4,16,41,45,49,51,63,69,72,74,76,81,82,83,85,86,87,100,121,122,133,135,136,137,138,",
-        routeZIndex: 1000,
-        markerZIndex: 1020,
+        routeZIndex:1000,
+        markerZIndex:1020,
 
         startup:function () {
             console.debug("Hello World!");
@@ -282,16 +282,21 @@
 
             return new OpenLayers.StyleMap({
                     "default":new OpenLayers.Style({
-                            pointRadius:"${radius}",
-                            fillColor:"#0015FF",
-                            strokeColor:"#333",
-                            strokeWidth:2,
-                            fillOpacity:0.3,
-                            graphicZIndex:1
-                        },
-                        {
-                            context:{ radius:determineRadius }
-                        }),
+                        pointRadius:"${radius}",
+                        fillColor:"#0015FF",
+                        strokeColor:"#333",
+                        strokeWidth:2,
+                        fillOpacity:0.3,
+                        graphicZIndex:1
+                    }, { context:{ radius:determineRadius } }),
+                    "temporary":new OpenLayers.Style({
+                        pointRadius:"${radius}",
+                        fillColor:"#0015FF",
+                        strokeColor:"#333",
+                        strokeWidth:2,
+                        fillOpacity:0.5,
+                        graphicZIndex:1
+                    }, { context:{ radius:determineRadius } }),
                     "select":new OpenLayers.Style({
                         fillColor:"#66ccff",
                         strokeColor:"#FF0000",
@@ -471,9 +476,9 @@
 
             //fix the marker z-index
             if (this.liveRoutes[routeID]) {
-                 this.liveRoutes[routeID].setZIndex(this.markerZIndex);     //these should be above the routes.
-                 this.liveRoutes[routeID].redraw();
-             }
+                this.liveRoutes[routeID].setZIndex(this.markerZIndex);     //these should be above the routes.
+                this.liveRoutes[routeID].redraw();
+            }
         },
 
 

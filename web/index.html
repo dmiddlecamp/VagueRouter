@@ -31,9 +31,9 @@
         }
 
         #info {
-            height: 600px;
-            overflow-x: hidden;
-            overflow-y: scroll;
+            /*height: 600px;*/
+            /*overflow-x: hidden;*/
+            /*overflow-y: scroll;*/
         }
 
             /* FIX FOR BOOTSTRAP + OPENLAYERS */
@@ -63,6 +63,8 @@
 
         .accordion-inner {
             padding: 0;
+            height: 450px;
+            overflow-y: scroll;
         }
 
         .routeQueryWidget {
@@ -89,6 +91,14 @@
             margin: 5px;
             padding: 5px;
             /*background-color: #CCCCCC;*/
+        }
+
+        .route.odd {
+            background-color: #EEE;
+        }
+
+        .route.even {
+            background-color: #DDD;
         }
 
         .route:hover {

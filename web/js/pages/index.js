@@ -318,11 +318,15 @@
             var that = this;
             var streetFeet = 30, minimumPxWidth = 5;
             var streetMapUnits = this.convertTo(streetFeet, 'ft', this.mapUnitsForConverting);
-            var determineRadius = function (f) { return Math.max(minimumPxWidth, that.calculateRadiusPx(that.map, streetMapUnits) ); };
+            var determineRadius = function (f) {
+                return Math.max(minimumPxWidth, that.calculateRadiusPx(that.map, streetMapUnits));
+            };
 
             var smallStreetFeet = 15, minimumSmallWidthPx = 2;
             var streetMapUnitsSmall = this.convertTo(smallStreetFeet, 'ft', this.mapUnitsForConverting);
-            var determineRadiusSmall = function (f) { return Math.max(minimumSmallWidthPx, that.calculateRadiusPx(that.map, streetMapUnitsSmall) ); };
+            var determineRadiusSmall = function (f) {
+                return Math.max(minimumSmallWidthPx, that.calculateRadiusPx(that.map, streetMapUnitsSmall));
+            };
 
 //            console.debug("converted value is ", that.bufferMapUnits);
 
@@ -455,7 +459,7 @@
         },
 
 
-        _lastHighlighted: {},
+        _lastHighlighted:{},
 
         /**
          * Assumes you know what render intent you want the old feature to revert to!
@@ -613,6 +617,23 @@
                 }
             });
         },
+        padLeft:function (str, chr, num) {
+            str = str + '';
+            while (str.length < num) {
+                str = chr + str;
+            }
+            return str;
+        },
+
+        getRouteScheduleURL:function (id) {
+            var baseURL = "http://www.septa.org/schedules/bus/pdf/";
+            var routeNum = parseFloat(id);
+            if (isNaN(routeNum)) {
+                return 'http://www.septa.org/schedules/';
+            }
+            var paddedNum = this.padLeft(routeNum, '0', 3);
+            return baseURL + paddedNum + ".pdf";
+        },
 
 
         _nextAccordionGroupID:1,
@@ -698,6 +719,8 @@
                 $(h).appendTo($list);
             }
             else {
+                var rowNum = 0;
+
                 for (var id in items) {
                     var route = items[id];
 
@@ -709,22 +732,24 @@
                         routeName = (routeInfo) ? routeInfo.name : '';
                     }
 
+                    var evenOdd = (rowNum % 2 == 0) ? "even" : "odd";
+                    rowNum++;
 
                     var h = "" +
-                        "<div class='route'>" +
+                        "<div class='route " + evenOdd + "'>" +
                         " <div class='section'> " +
                         "  <div class='title'>" +
-                        "   <h2 class='short_name'>" + name + "" +
+                        "   <h3 class='short_name'>" + name + "" +
                         "     <small class='long_name'>" + routeName + "</small>" +
-                        "   </h2>" +
+                        "   </h3>" +
                         "  </div>" +
 
                         "   <div class='controls'>" +
                         "    " +
                         "  <div class='btn-group'>" +
-                        "     <button class='btn btn-large btn-info  zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
-                        "     <button class='btn btn-large buses '><i class='icon-eye-open'></i> Buses</button>" +
-                        "     <button class='btn btn-large schedule'><i class='icon-time'></i> Schedule</button>" +
+                        "     <button class='btn btn-medium btn-info  zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
+                        "     <button class='btn btn-medium buses '><i class='icon-eye-open'></i> Buses</button>" +
+                        "     <button class='btn btn-medium schedule'><i class='icon-time'></i> Schedule</button>" +
                         "  </div>" +
                         " </div>" +
                         " </div>" +
@@ -735,7 +760,8 @@
                     $h.appendTo($list);
 
                     var highlightFn = $.proxy(this.highlightFeature, this),
-                        toggleRouteFn = $.proxy(this.toggleLiveRoute, this);
+                        toggleRouteFn = $.proxy(this.toggleLiveRoute, this),
+                        getScheduleURLFn = $.proxy(this.getRouteScheduleURL, this);
 
 
                     (function (item, busRouteID) {
@@ -753,17 +779,9 @@
                         });
 
                         $($h).find(".schedule").on("click", function () {
-
                             //http://www.septa.org/schedules/bus/pdf/090.pdf
-
-                            console.debug('get pdf for route ', busRouteID);
-
-                            //                        console.debug("this clicked ", $(this), this.element);
-                            //                        console.debug('showing buses for ', item.feature.attributes.name);
-
-//                            var isActive = $(this).hasClass(activeClass);
-//                            toggleRouteFn(busRouteID, !isActive);
-//                            $(this).toggleClass(activeClass, !isActive);
+                            var url = getScheduleURLFn(busRouteID);
+                            window.open(url, '_blank')
                         });
 
 

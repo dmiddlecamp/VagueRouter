@@ -10,6 +10,9 @@ notes
 		[ ] auto-collapse previous searches
 		[X] highlight search bubble when hover over address button?
 		
+	[X] move scroller to accordion-body
+		[ ] fix fixed pixel height... -- not sure what this should be instead...?
+		
 	[ ] geolocation api
 		[ ] jump to current location button?
 		

@@ -433,10 +433,31 @@
             //lat"39.993626"
             //lng"-75.147606"
 
-            var size = new OpenLayers.Size(21, 25);
-            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+            var icon = null;
+            var direction = bus['Direction'];
+            var iconName = 'img/glyphicons_031_bus.png';
+            console.debug('bus direction was ', direction);
+
+            if (direction == 'NorthBound') {
+                iconName = 'img/glyphicons_218_circle_arrow_top.png';
+            }
+            else if (direction == 'SouthBound') {
+                iconName = 'img/glyphicons_219_circle_arrow_down.png';
+
+            } else if (direction == 'EastBound') {
+                iconName = 'img/glyphicons_217_circle_arrow_right.png';
+
+            } else if (direction == 'WestBound') {
+                iconName = 'img/glyphicons_216_circle_arrow_left.png';
+            }
+            icon = new OpenLayers.Icon(iconName, size, offset);
+
+            var size = new OpenLayers.Size(26, 26);
+//            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h /2 ));
             //TODO: Change icon / cache icon?
-            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+            //var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+
             var marker = new OpenLayers.Marker(new OpenLayers.LonLat(parseFloat(bus.lng), parseFloat(bus.lat)), icon);
 
             return marker;

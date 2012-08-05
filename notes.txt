@@ -1,10 +1,19 @@
 notes
-	[ ] thumbnail of route?
 	[X] show route name rendered html
-	[ ] show live buses on route?
+	[x] show buses on route?
 	
 	[X] twitter bootstrap?
 	[X] move rendered html off to side bar, wrap under map on small viewport
+	
+	[ ] async kml layer rendering (so page loads faster), show progress bar / do deferred checking?
+		[ ] show progress bar?
+	[ ] show bus alerts / detours on route info widget?
+	[ ] geolocation api
+		[ ] jump to current location button?
+	[ ] change draw point bubble to reflect search radius
+		[ ] adjustable search radius?
+	[ ] page header / hero -- showing what this is / what it's doing?
+	
 	
 	
 	[ ] map
@@ -18,7 +27,7 @@ notes
 		[ ] get bus schedules
 		[ ] add popup feature for bus markers
 		[ ] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
-		[ ] jump to current location button?
+		
 		
 	pipedream goals:
 		[ ] mobile app friendly
@@ -28,3 +37,6 @@ notes
 		[ ] checkbox for 'only show routes that have buses headed towards me?'
 		
 
+
+		
+		

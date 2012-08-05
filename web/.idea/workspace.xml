@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="864f967b-0178-486f-a8d9-df4b4b26726c" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../notes.txt" afterPath="$PROJECT_DIR$/../notes.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/pages/index.js" afterPath="$PROJECT_DIR$/js/pages/index.js" />
     </list>
     <ignored path="web.iws" />
@@ -45,7 +46,7 @@
       <file leaf-file-name="index.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/pages/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="434" column="0" selection-start="14629" selection-end="14629" vertical-scroll-proportion="0.37125748">
+            <state line="456" column="74" selection-start="15598" selection-end="15598" vertical-scroll-proportion="0.65628743">
               <folding />
             </state>
           </provider>
@@ -162,6 +163,20 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="js" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="web" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="img" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -409,9 +424,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/img/glyphicons-halflings-white.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/img/glyphicons-halflings.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/pages/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="434" column="0" selection-start="14629" selection-end="14629" vertical-scroll-proportion="0.37125748">
+        <state line="456" column="74" selection-start="15598" selection-end="15598" vertical-scroll-proportion="0.65628743">
           <folding />
         </state>
       </provider>

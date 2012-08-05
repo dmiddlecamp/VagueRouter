@@ -88,7 +88,7 @@
             this.layers.points.destroyFeatures();
 
             //RESET ALL SELECTED / HIGHLIGHTED ROUTES
-            this._lastHighlighted = null;
+            this._lastHighlighted = {};
             for (var id in this.kmlRoutes) {
                 var layer = this.kmlRoutes[id];
                 if (!layer || (layer.features.length == 0)) {
@@ -261,9 +261,6 @@
                 console.error("OpenLayers must be loaded for this library to work");
             }
 
-//             srcType = this.coalesceType(srcType);
-//             destType = this.coalesceType(destType);
-
             var inchesPerSrc = OpenLayers.INCHES_PER_UNIT[srcType];
             var inchesPerDest = OpenLayers.INCHES_PER_UNIT[destType];
             return ((value * inchesPerSrc) / inchesPerDest);
@@ -275,47 +272,42 @@
             var determineRadius = function (f) {
                 return that.calculateRadiusPx(that.map, that.bufferMapUnits);
             };
-            //console.debug("converted value is ", that.bufferMapUnits);
-
-            //TODO: pointRadius with real distance
-
 
             return new OpenLayers.StyleMap({
-                    "default":new OpenLayers.Style({
-                        pointRadius:"${radius}",
-                        fillColor:"#0015FF",
-                        strokeColor:"#333",
-                        strokeWidth:2,
-                        fillOpacity:0.3,
-                        graphicZIndex:1
-                    }, { context:{ radius:determineRadius } }),
-                    "temporary":new OpenLayers.Style({
-                        pointRadius:"${radius}",
-                        fillColor:"#FF6600",
-                        strokeColor:"#FF6600",
-                        strokeWidth:2,
-                        strokeDashstyle:'dot',
-                        strokeOpacity:0.75,
-                        fillOpacity:0.5,
-                        graphicZIndex:1
-                    }, { context:{ radius:determineRadius } }),
+                "default":new OpenLayers.Style({
+                    pointRadius:"${radius}",
+                    fillColor:"#0015FF",
+                    strokeColor:"#333",
+                    strokeWidth:2,
+                    fillOpacity:0.3,
+                    graphicZIndex:1
+                }, { context:{ radius:determineRadius } }),
+                "temporary":new OpenLayers.Style({
+                    pointRadius:"${radius}",
+                    fillColor:"#FF6600",
+                    strokeColor:"#FF6600",
+                    strokeWidth:2,
+                    strokeDashstyle:'dot',
+                    strokeOpacity:0.75,
+                    fillOpacity:0.5,
+                    graphicZIndex:1
+                }, { context:{ radius:determineRadius } }),
 
-                    "highlight":new OpenLayers.Style({
-                        pointRadius:"${radius}",
-                        fillColor:"#0015FF",
-                        strokeColor:"#333",
-                        strokeWidth:4,
-                        fillOpacity:0.7,
-                        graphicZIndex:1
-                    }, { context:{ radius:determineRadius } }),
+                "highlight":new OpenLayers.Style({
+                    pointRadius:"${radius}",
+                    fillColor:"#0015FF",
+                    strokeColor:"#333",
+                    strokeWidth:4,
+                    fillOpacity:0.7,
+                    graphicZIndex:1
+                }, { context:{ radius:determineRadius } }),
 
-                    "select":new OpenLayers.Style({
-                        fillColor:"#66ccff",
-                        strokeColor:"#FF0000",
-                        graphicZIndex:2
-                    })
-                }
-            );
+                "select":new OpenLayers.Style({
+                    fillColor:"#66ccff",
+                    strokeColor:"#FF0000",
+                    graphicZIndex:2
+                })
+            });
         },
 
         kmlRouteStyleMap:function () {
@@ -464,24 +456,26 @@
         },
 
 
-        _lastHighlighted:null,
+        _lastHighlighted: {},
 
         /**
          * Assumes you know what render intent you want the old feature to revert to!
          * @param feature
          * @param resetTo
          */
-        highlightFeature:function (routeID, feature, resetTo) {
+        highlightFeature:function (category, routeID, feature, resetTo) {
             this.map.resetLayersZIndex();
 
-            if (this._lastHighlighted) {
-                this._lastHighlighted.renderIntent = resetTo;
-                this._lastHighlighted.layer.redraw();
-                this._lastHighlighted = null;
+            var last = this._lastHighlighted[category];
+            if (last) {
+                last.renderIntent = resetTo;
+                last.layer.redraw();
+                this._lastHighlighted[category] = null;
             }
 
+            this._lastHighlighted[category] = feature;
+
             feature.renderIntent = "highlight";
-            this._lastHighlighted = feature;
             feature.layer.setZIndex(this.routeZIndex);
             feature.layer.redraw();
 
@@ -693,7 +687,7 @@
                 //on mouseover addresse button, highlight feature
                 var highlightFn = $.proxy(this.highlightFeature, this);
                 $($node).find('.reverseAddressBtn').on("mouseover", function () {
-                    highlightFn(null, feature, "default");
+                    highlightFn("search", null, feature, "default");
                 });
 
             }, this);
@@ -734,10 +728,6 @@
                         "     <button class='btn btn-large schedule'><i class='icon-time'></i> Schedule</button>" +
                         "  </div>" +
                         " </div>" +
-//                        "   <div class='section'>" +
-//                        "    <span class='title'>Schedule</span>" +
-//                        "    <div class='schedule'>loading...</div>" +
-//                        "   </div>" +
                         " </div>" +
                         "</div>";
 
@@ -754,15 +744,12 @@
 
                         $($h).find(".zoom").on("click", function () {
                             //console.debug('zooming to item ', item.feature.attributes.name);
-                            highlightFn(busRouteID, item.feature, "select");
+                            highlightFn("route", busRouteID, item.feature, "select");
                             map.zoomToExtent(item.feature.geometry.getBounds());
                         });
                         $($h).find(".buses").on("click", function () {
-                            //                        console.debug("this clicked ", $(this), this.element);
-                            //                        console.debug('showing buses for ', item.feature.attributes.name);
-
                             var isActive = $(this).hasClass(activeClass);
-                            toggleRouteFn(busRouteID, !isActive);
+                            toggleRouteFn("route", busRouteID, !isActive);
                             $(this).toggleClass(activeClass, !isActive);
                         });
 
@@ -786,7 +773,7 @@
 
 
                         $($h).on("mouseover", function () {
-                            highlightFn(busRouteID, item.feature, "select");
+                            highlightFn("route", busRouteID, item.feature, "select");
                         });
                     })(route, routeID);
 

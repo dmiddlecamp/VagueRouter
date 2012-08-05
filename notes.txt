@@ -5,8 +5,13 @@ notes
 	[X] twitter bootstrap?
 	[X] move rendered html off to side bar, wrap under map on small viewport
 	
+	[X] show progress bar so we perceive the page to be loading faster...
+		[x] don't close modal dialog until base layer is also loaded...
+	
 	[ ] async kml layer rendering (so page loads faster), show progress bar / do deferred checking?
-		[ ] show progress bar?
+		
+	[X] html5 application manifest to cache kml / data files
+	[X] don't request missing routes
 		
 	[ ] show bus alerts / detours on route info widget?
 	[ ] geolocation api
@@ -15,6 +20,8 @@ notes
 		[ ] adjustable search radius?
 	[ ] page header / hero -- showing what this is / what it's doing?
 	
+	
+	[ ] get bus schedules (CAN THE API DO THIS BY ITSELF?)
 	
 	
 	[ ] map
@@ -25,7 +32,7 @@ notes
 		[X] bring selected route to the top of the z-index
 		[X] clear live buses on map clear
 		[ ] update buses periodically?
-		[ ] get bus schedules
+
 		[ ] add popup feature for bus markers
 		[X] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
 		

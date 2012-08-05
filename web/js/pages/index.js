@@ -14,8 +14,13 @@
          */
         mapUnitsForConverting:"degrees",
 
+        missingRoutes:",0,4,16,41,45,49,51,63,69,72,74,76,81,82,83,85,86,87,100,121,122,133,135,136,137,138,",
+
+
         startup:function () {
             console.debug("Hello World!");
+            this.showStartupDialog();
+
             this.bufferMapUnits = this.convertTo(this.bufferFeet, 'ft', this.mapUnitsForConverting); //this.map.getUnits());
 
 
@@ -34,8 +39,23 @@
 
         },
 
+        showStartupDialog:function () {
+            $("#loadingDialog").modal({
+                backdrop:'static',
+                keyboard:true
+            });
+        },
+        updateStartupDialogProgress:function (value) {
+//            console.debug('updating progress to ', value);
+            $("#loadingDialog .bar").css('width', value.toFixed(0) + "%");
+        },
+        closeStartupDialog:function () {
+            $("#loadingDialog").modal('hide');
+        },
+
+
         getRouteNames:function () {
-            console.debug('requesting route names file ');
+            //console.debug('requesting route names file ');
             $.ajax({
                 url:"data/routeNames.js",
                 dataType:"json",
@@ -43,7 +63,7 @@
             });
         },
         onRouteNamesLoaded:function (data) {
-            console.debug('route names returned ');
+//            console.debug('route names returned ');
             this.routeNames = {};
             for (var idx in data.routeNames) {
                 var item = data.routeNames[idx];
@@ -61,7 +81,7 @@
         },
 
         clearMap:function () {
-            console.debug("clear map clicked");
+//            console.debug("clear map clicked");
 
             //destroy all the points we've drawn
             this.layers.points.destroyFeatures();
@@ -152,9 +172,13 @@
             //TODO: draw feature control
             //map.events.register("click", map, $.proxy(this.onMapClicked, this));
             this.loadAllRoutes();
+
+            //call me last, after you've added all your initial layers...
+            this.wireAllMapLayersToProgress();
         },
 
         loadAllRoutes:function () {
+            this.updateStartupDialogProgress(5);
 
             $.ajax({
                 url:"data/routeIDs.js",
@@ -167,8 +191,52 @@
 
         },
 
+        wireAllMapLayersToProgress:function (maxProgress) {
+            maxProgress = (maxProgress || 90);
+            var that = this;
+            this.updateStartupDialogProgress(10);
+            var layersDone = 0;
+            var totalLayers = this.map.layers.length;
+
+            var onLayerLoaded = function () {
+                layersDone++;
+                var value = (layersDone / totalLayers) * maxProgress;
+                that.updateStartupDialogProgress(value);
+
+                if (layersDone == totalLayers) {
+                    that.updateStartupDialogProgress(95);
+                    that.closeStartupDialog();
+                }
+            };
+
+            for (var idx in this.map.layers) {
+                var layer = this.map.layers[idx];
+                if (layer.loading || !layer.drawn) {
+                    layer.events.register('loadend', this, onLayerLoaded);
+                }
+                else {
+                    //layer is already loaded.
+                    onLayerLoaded();
+                }
+
+            }
+        },
+
+
+        /**
+         * Returns true if the routeID is in the 'missingRoutes' string
+         * @param id
+         * @return {Boolean}
+         */
+        isRouteMissing:function (id) {
+            return (this.missingRoutes.indexOf(',' + id + ',') >= 0);
+        },
+
         onRouteIDsReturned:function (data) {
             for (var id in data.routes) {
+                if (this.isRouteMissing(id)) {
+                    continue;
+                }
                 this.addRoute(id);
             }
         },
@@ -247,7 +315,7 @@
                 );
             };
 
-            console.debug("converted value is ", that.bufferMapUnits);
+//            console.debug("converted value is ", that.bufferMapUnits);
 
             var result = new OpenLayers.StyleMap({
                 "default":new OpenLayers.Style({
@@ -306,6 +374,7 @@
 
                 this.map.addLayer(this.kmlRoutes[route]);
             }
+            return this.kmlRoutes[route];
         },
 
 
@@ -368,11 +437,11 @@
          */
         panZoomAroundQuery:function (feature) {
             var bounds = feature.geometry.getBounds();
-            console.debug("feature bounds are ", bounds);
+            //console.debug("feature bounds are ", bounds);
 
             bounds = this.extendBounds(bounds, this.bufferMapUnits * 4);
 
-            console.debug("zooming to ", bounds);
+            //console.debug("zooming to ", bounds);
             this.map.zoomToExtent(bounds);
         },
 
@@ -401,7 +470,7 @@
 
 
         liveRoutes:{},
-        clearAllLiveRoutes: function() {
+        clearAllLiveRoutes:function () {
             if (this.liveRoutes) {
                 for (var id in this.liveRoutes) {
                     var layer = this.liveRoutes[id];
@@ -416,7 +485,7 @@
 
         toggleLiveRoute:function (routeID, active) {
             if (!active) {
-                console.debug('removing layer');
+                //console.debug('removing layer');
                 var layer = this.liveRoutes[routeID];
                 if (layer) {
                     this.map.removeLayer(layer);
@@ -424,12 +493,12 @@
                 }
             }
             else {
-                console.debug('requesting route layer for ' + routeID);
+                //console.debug('requesting route layer for ' + routeID);
                 $.ajax({
                     url:"http://www3.septa.org/hackathon/TransitView/?route=" + routeID,
                     dataType:"jsonp",
                     success:$.proxy(function (data) {
-                        console.debug("live route loaded for " + routeID);
+                        //console.debug("live route loaded for " + routeID);
                         this.onLiveRouteLoaded(routeID, data);
 
                     }, this)
@@ -451,7 +520,7 @@
             var icon = null;
             var direction = bus['Direction'];
             var iconName = 'img/glyphicons_031_bus.png';
-            console.debug('bus direction was ', direction);
+            //console.debug('bus direction was ', direction);
 
             if (direction == 'NorthBound') {
                 iconName = 'img/glyphicons_218_circle_arrow_top.png';
@@ -465,11 +534,14 @@
             } else if (direction == 'WestBound') {
                 iconName = 'img/glyphicons_216_circle_arrow_left.png';
             }
+            else {
+                console.debug('bus direction was ', direction);
+            }
             icon = new OpenLayers.Icon(iconName, size, offset);
 
             var size = new OpenLayers.Size(26, 26);
 //            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
-            var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h /2 ));
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h / 2 ));
             //TODO: Change icon / cache icon?
             //var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
 
@@ -479,7 +551,7 @@
         },
 
         onLiveRouteLoaded:function (routeID, data) {
-            console.debug('got back ', routeID, data);
+//            console.debug('got back ', routeID, data);
 
             if (data && (data.bus)) {
 
@@ -489,7 +561,7 @@
 
                 for (var id in data.bus) {
                     var bus = data.bus[id];
-                    console.debug('got back bus ', bus);
+//                    console.debug('got back bus ', bus);
 
                     layer.addMarker(this.createBusMarker(bus));
                 }

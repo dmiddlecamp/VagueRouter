@@ -37,6 +37,7 @@
 
         connectEvents:function () {
             $("#btnClear").on('click', $.proxy(this.onClearClicked, this));
+            $("#btnFindMe").on('click', $.proxy(this.onFindMeClicked, this));
 
         },
 
@@ -73,6 +74,23 @@
             }
         },
 
+        useCurrentLocation:false,
+        onFindMeClicked:function () {
+            var ctl = this.mapControls.geolocateControl;
+
+            //TODO:
+
+            this.useCurrentLocation = !this.useCurrentLocation;
+            $("#btnFindMe").text((this.useCurrentLocation) ? "Using your location..." : "Find me");
+
+            if (this.useCurrentLocation) {
+                ctl.activate();
+            }
+            else {
+                ctl.deactivate();
+            }
+        },
+
 
         onClearClicked:function () {
             //clear all the buttons we've added
@@ -86,6 +104,7 @@
 
             //destroy all the points we've drawn
             this.layers.points.destroyFeatures();
+            this.layers.accuracyBubbles.destroyFeatures();
 
             //RESET ALL SELECTED / HIGHLIGHTED ROUTES
             this._lastHighlighted = {};
@@ -152,9 +171,23 @@
             var pointLayer = new OpenLayers.Layer.Vector("Point Layer", {
                 styleMap:this.pointsStyleMap()
             });
+            var accuracyBubbles = new OpenLayers.Layer.Vector("accuracyBubbles", {});
 
-            map.addLayers([ pointLayer]);
-            map.addControl(new OpenLayers.Control.MousePosition());
+            map.addLayers([ accuracyBubbles, pointLayer ]);
+            //map.addControl(new OpenLayers.Control.MousePosition());
+
+            var geolocateControl = new OpenLayers.Control.Geolocate({
+                id:'locate-control',
+                watch:true,
+                geolocationOptions:{
+                    enableHighAccuracy:true,
+                    maximumAge:30,
+                    timeout:7000
+                }
+            });
+            geolocateControl.events.register("locationupdated", this, this.onLocationUpdated);
+            map.addControl(geolocateControl);
+
 
             var drawControl = new OpenLayers.Control.DrawFeature(pointLayer, OpenLayers.Handler.Point);
             drawControl.events.register('featureadded', this, this.onMapClicked);
@@ -163,10 +196,12 @@
 
 
             this.layers = {
-                points:pointLayer
+                points:pointLayer,
+                accuracyBubbles:accuracyBubbles
             };
             this.mapControls = {
-                drawControl:drawControl
+                drawControl:drawControl,
+                geolocateControl:geolocateControl
             };
             map.zoomToExtent(this.startingExtent);
 
@@ -177,6 +212,47 @@
             //call me last, after you've added all your initial layers...
             this.wireAllMapLayersToProgress();
         },
+
+        _onFirstLocationUpdate:true,
+        onLocationUpdated:function (e) {
+            if (!this.useCurrentLocation) {
+                return;
+            }
+            //console.debug('onLocationUpdated ', e);
+
+            var accuracyBubbleStyle = {
+                fillOpacity:0.1,
+                fillColor:'#000',
+                strokeColor:'#f00',
+                strokeOpacity:0.6
+            };
+            var accuracyPointStyle = {
+                graphicName:'cross',
+                strokeColor:'#f00',
+                strokeWidth:2,
+                fillOpacity:0,
+                pointRadius:10
+            };
+
+           var accuracyValue = this.convertTo(e.position.coords.accuracy, 'm', this.mapUnitsForConverting);
+
+
+            var layer = this.layers.accuracyBubbles;
+            layer.removeAllFeatures();
+            layer.addFeatures([
+                new OpenLayers.Feature.Vector(e.point.clone(), {}, accuracyPointStyle),
+                new OpenLayers.Feature.Vector(
+                    OpenLayers.Geometry.Polygon.createRegularPolygon(
+                        new OpenLayers.Geometry.Point(e.point.x, e.point.y),
+                        accuracyValue / 2.0, 50, 0
+                    ), {}, accuracyBubbleStyle)
+            ]);
+            if (this._onFirstLocationUpdate) {
+                this._onFirstLocationUpdate = false;
+                this.map.zoomToExtent(layer.getDataExtent());
+            }
+        },
+
 
         loadAllRoutes:function () {
             this.updateStartupDialogProgress(5);
@@ -459,7 +535,8 @@
         },
 
 
-        _lastHighlighted:{},
+        _lastHighlighted:{
+        },
 
         /**
          * Assumes you know what render intent you want the old feature to revert to!
@@ -491,7 +568,8 @@
         },
 
 
-        liveRoutes:{},
+        liveRoutes:{
+        },
         clearAllLiveRoutes:function () {
             if (this.liveRoutes) {
                 for (var id in this.liveRoutes) {

@@ -178,7 +178,7 @@
 
             //buffer units had better be in map units.
             var radius = bufferUnits / map.getResolution();
-            console.debug('calc radius returning ', radius);
+            //console.debug('calc radius returning ', radius);
             return radius;
         },
 
@@ -204,7 +204,7 @@
             var determineRadius = function (f) {
                 return that.calculateRadiusPx(that.map, that.bufferMapUnits);
             };
-            console.debug("converted value is ", that.bufferMapUnits);
+            //console.debug("converted value is ", that.bufferMapUnits);
 
             //TODO: pointRadius with real distance
 
@@ -231,6 +231,10 @@
         },
 
         kmlRouteStyleMap:function () {
+            if (this._cachedRouteStyleMap) {
+                return this._cachedRouteStyleMap;
+            }
+
             var that = this;
             var minimumWidth = 5;
             var streetFeet = 30;
@@ -243,13 +247,13 @@
 
             console.debug("converted value is ", that.bufferMapUnits);
 
-            return new OpenLayers.StyleMap({
+            var result = new OpenLayers.StyleMap({
                 "default":new OpenLayers.Style({
                         fillColor:"#ffcc66",
                         strokeColor:"#FFF", //near-white
-                        strokeWidth:"${radius}", //tied to 'streetFeet'
+                        strokeWidth:1, //fixed pixels
                         graphicZIndex:1,
-                        opacity: 0.2
+                        opacity:0.2
                     },
                     {context:{ radius:determineRadius }}
                 ),
@@ -270,8 +274,11 @@
                     },
                     {context:{ radius:determineRadius }}
                 )
-
             });
+
+            this._cachedRouteStyleMap = result;
+            return result;
+
         },
 
 
@@ -390,6 +397,61 @@
             feature.layer.redraw();
         },
 
+
+        liveRoutes:{},
+        toggleLiveRoute:function (routeID, active) {
+            if (!active) {
+                console.debug('removing layer');
+                var layer = this.liveRoutes[routeID];
+                if (layer) {
+                    this.map.removeLayer(layer);
+                    this.liveRoutes[routeID] = null;
+                }
+            }
+            else {
+                console.debug('requesting route layer for ' + routeID);
+                $.ajax({
+                    url:"http://www3.septa.org/hackathon/TransitView/?route=" + routeID,
+                    dataType:"jsonp",
+                    success:$.proxy(function (data) {
+                        console.debug("live route loaded for " + routeID);
+                        this.onLiveRouteLoaded(routeID, data);
+
+                    }, this)
+                });
+            }
+        },
+
+        createBusMarker:function (bus) {
+
+            var size = new OpenLayers.Size(21, 25);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+            //TODO: Change icon / cache icon?
+            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+            var marker = new OpenLayers.Marker(new OpenLayers.LonLat(parseFloat(bus.lng), parseFloat(bus.lat)), icon);
+
+            return marker;
+        },
+
+        onLiveRouteLoaded:function (routeID, data) {
+            console.debug('got back ', routeID, data);
+
+            if (data && (data.bus)) {
+
+                var layer = new OpenLayers.Layer.Markers(routeID);
+                this.liveRoutes[routeID] = layer;
+                this.map.addLayer(layer);
+
+                for (var id in data.bus) {
+                    var bus = data.bus[id];
+                    console.debug('got back bus ', bus);
+
+                    layer.addMarker(this.createBusMarker(bus));
+                }
+            }
+
+        },
+
         resolvePointToAddress:function (feature, callback) {
             var pt = feature.geometry.getCentroid();
 
@@ -430,7 +492,7 @@
 
             var orig = "<div>" +
                 "<span class='reverseAddress'>Routes near (checking...) </span>" +
-                "<span class='badge badge-info'>items.length</span>" +
+                "<span class='badge badge-info'>" + items.length + "</span>" +
                 "<ul> </ul></div>";
 
             //better way to create and append a div, while retaining a reference to it?
@@ -455,10 +517,10 @@
             }
             else {
                 for (var id in items) {
-                    var item = items[id];
+                    var route = items[id];
 
-                    var routeID = item.layer.name;
-                    var name = item.feature.attributes.name;
+                    var routeID = route.layer.name;
+                    var name = route.feature.attributes.name;
                     var routeName = '';
                     if (this.routeNames) {
                         var routeInfo = this.routeNames[routeID];
@@ -492,20 +554,33 @@
                     var $h = $(h);
                     $h.appendTo($list);
 
-                    //CONTEXT is page!
-                    var highlightFn = $.proxy(this.highlightFeature, this);
+                    var highlightFn = $.proxy(this.highlightFeature, this),
+                        toggleRouteFn = $.proxy(this.toggleLiveRoute, this);
 
-                    $($h).find(".zoom").on("click", $.proxy(function () {
-                        //CONTEXT is "item"
 
-                        console.debug('zooming to item ', this.feature.attributes.name);
-                        highlightFn(this.feature, "select");
-                        map.zoomToExtent(this.feature.geometry.getBounds());
-                    }, item));
+                    (function (item, busRouteID) {
 
-                    $($h).on("mouseover", $.proxy(function () {
-                        highlightFn(this.feature, "select");
-                    }, item));
+                        var activeClass = 'btn-success';
+
+
+                        $($h).find(".zoom").on("click", function () {
+                            //console.debug('zooming to item ', item.feature.attributes.name);
+                            highlightFn(item.feature, "select");
+                            map.zoomToExtent(item.feature.geometry.getBounds());
+                        });
+                        $($h).find(".buses").on("click", function () {
+//                        console.debug("this clicked ", $(this), this.element);
+//                        console.debug('showing buses for ', item.feature.attributes.name);
+
+                            var isActive = $(this).hasClass(activeClass);
+                            toggleRouteFn(busRouteID, !isActive);
+                            $(this).toggleClass(activeClass, !isActive);
+                        });
+                        $($h).on("mouseover", function () {
+                            highlightFn(item.feature, "select");
+                        });
+                    })(route, routeID);
+
                 }
             }
 

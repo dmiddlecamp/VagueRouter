@@ -316,14 +316,13 @@
             }
 
             var that = this;
-            var minimumWidth = 5;
-            var streetFeet = 30;
-            var streetMapUnits = this.convertTo(streetFeet, 'ft', this.mapUnitsForConverting); //this.map.getUnits());
-            var determineRadius = function (f) {
-                return Math.max(minimumWidth,
-                    that.calculateRadiusPx(that.map, streetMapUnits)
-                );
-            };
+            var streetFeet = 30, minimumPxWidth = 5;
+            var streetMapUnits = this.convertTo(streetFeet, 'ft', this.mapUnitsForConverting);
+            var determineRadius = function (f) { return Math.max(minimumPxWidth, that.calculateRadiusPx(that.map, streetMapUnits) ); };
+
+            var smallStreetFeet = 15, minimumSmallWidthPx = 2;
+            var streetMapUnitsSmall = this.convertTo(smallStreetFeet, 'ft', this.mapUnitsForConverting);
+            var determineRadiusSmall = function (f) { return Math.max(minimumSmallWidthPx, that.calculateRadiusPx(that.map, streetMapUnitsSmall) ); };
 
 //            console.debug("converted value is ", that.bufferMapUnits);
 
@@ -331,11 +330,11 @@
                 "default":new OpenLayers.Style({
                         fillColor:"#ffcc66",
                         strokeColor:"#FFF", //near-white
-                        strokeWidth:1, //fixed pixels
+                        strokeWidth:"${radius}", //tied to 'streetFeet'
                         graphicZIndex:1,
                         opacity:0.2
                     },
-                    {context:{ radius:determineRadius }}
+                    {context:{ radius:determineRadiusSmall }}
                 ),
                 "select":new OpenLayers.Style({
                         fillColor:"#66ccff",
@@ -749,7 +748,7 @@
                         });
                         $($h).find(".buses").on("click", function () {
                             var isActive = $(this).hasClass(activeClass);
-                            toggleRouteFn("route", busRouteID, !isActive);
+                            toggleRouteFn(busRouteID, !isActive);
                             $(this).toggleClass(activeClass, !isActive);
                         });
 

@@ -638,7 +638,13 @@
                 }
 
                 var first = addresses.address;//[0];
-                $($node).find('.reverseAddress').html("Routes near " + first.Address);
+                var $addressNode = $($node).find('.reverseAddress');
+                var addressHtml = "<button class='btn'><i class='icon-zoom-in'></i> " +  first.Address;
+
+                $addressNode.html(addressHtml);
+                $addressNode.on('click', $.proxy(function() {
+                    this.panZoomAroundQuery(feature);
+                }, this));
             }, this);
             this.resolvePointToAddress(feature, onAddressResolved);
 

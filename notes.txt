@@ -6,8 +6,18 @@ notes
 	[X] twitter bootstrap?
 	[X] move rendered html off to side bar, wrap under map on small viewport
 	[x] accordian hide previous point / routes?
-		[ ] add transition plugin?
-		[ ] auto-collapse / expand
+		---[ ] add transition plugin?
+		[ ] auto-collapse previous searches
+		[X] highlight search bubble when hover over address button?
+		
+	[ ] geolocation api
+		[ ] jump to current location button?
+		
+	[X] style 'clear-map' button
+	[x] fix 'horizontal scrollbar' style
+	[x] start zoomed in closer?
+	
+	
 	[ ] popover for bus / something button / map marker? (be sure to also trigger on click)
 	[x] make reverse geocode address clickable to re-zoom to initial drop point
 	
@@ -19,11 +29,10 @@ notes
 	[X] don't request missing routes
 		
 	[ ] show bus alerts / detours on route info widget?
-	[ ] geolocation api
-		[ ] jump to current location button?
+	
 	[X] change draw point bubble to reflect search radius
 		[ ] adjustable search radius?
-	[ ] page header / hero -- showing what this is / what it's doing?
+	[X] page header / hero -- showing what this is / what it's doing?
 	
 	
 	[ ] get bus schedules (CAN THE API DO THIS BY ITSELF?)

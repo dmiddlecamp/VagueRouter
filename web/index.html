@@ -31,9 +31,9 @@
         }
 
         #info {
-            height: 800px;
-            overflow: scroll;
-
+            height: 600px;
+            overflow-x: hidden;
+            overflow-y: scroll;
         }
 
             /* FIX FOR BOOTSTRAP + OPENLAYERS */
@@ -41,15 +41,40 @@
             max-width: none;
         }
 
-        /* remove underline on links for accordion toggles */
-        a.accordion-toggle { text-decoration: none; }
+        .intro-text {
+            background-color: #EEEEEE;
+            border-radius: 6px 6px 6px 6px;
+            /*margin-bottom: 15px;*/
+            padding: 15px;
+        }
+
+
+            /* remove underline on links for accordion toggles */
+        a.accordion-toggle {
+            text-decoration: none;
+        }
+
+        .accordion-heading {
+            background-color: #DDD;
+        }
+
+        .accordion-body {
+            /*background-color: #eee;*/
+        }
+
+        .accordion-inner {
+            padding: 0;
+        }
 
         .routeQueryWidget {
             margin-bottom: 15px;
         }
 
-        .routeCount { font-size: 9pt; }
+        .reverseAddressBtn { width: 85%; }
 
+        .routeCount {
+            font-size: 9pt;
+        }
 
         .routeList {
             margin-left: 5px;
@@ -60,10 +85,14 @@
             border-radius: 5px 5px 5px 5px;
             margin: 5px;
             padding: 5px;
+            /*background-color: #CCCCCC;*/
         }
+
+
 
         .route:hover {
             border: 1px solid #0015FF;
+            background-color: #CCC;
         }
 
         .route .short_name {
@@ -98,19 +127,43 @@
 </head>
 <body>
 <div class="container-fluid">
+
+    <div class="page-header">
+        <h1>
+            Route Find-a-tron
+            <small>Apps 4 Septa Hackathon 2012</small>
+        </h1>
+
+    </div>
+
     <div class="row-fluid">
         <div class="span8">
             <div id="map"></div>
         </div>
         <div class="span4 sidebar">
 
-            <div id="controls">
-                <ul>
-                    <li>
-                        <button id="btnClear">Clear Map</button>
-                    </li>
-                </ul>
+            <div class="hero-unit intro-text">
+                <p>Click the map to find every bus route that passes through an area</p>
+                <p>
+                    <button id="btnClear" class="btn btn-large btn-warning">Clear Map</button>
+                </p>
             </div>
+
+
+            <!--<div class="navbar">-->
+            <!--<div class="navbar-inner">-->
+            <!--<div class="container">-->
+            <!---->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</div>-->
+
+
+            <!--<div id="controls">-->
+            <!--<div class="btn-group" >-->
+            <!--</div>-->
+            <!--</div>-->
+
             <div id="info">
                 <div class="accordion" id="routeAccordion">
                     <!-- routes go here -->

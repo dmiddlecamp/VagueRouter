@@ -4,7 +4,7 @@
     var IndexConstructor = function () {
     };
     IndexConstructor.prototype = {
-        startingExtent:new OpenLayers.Bounds(-75.442428588868, 39.783554077149, -74.893112182618, 40.195541381837),
+        startingExtent:new OpenLayers.Bounds(-75.307592826415, 39.842640625978, -75.070356803465, 40.117298829103),
         routeNames:null,
 
         bufferFeet:1000,
@@ -299,6 +299,16 @@
                         fillOpacity:0.5,
                         graphicZIndex:1
                     }, { context:{ radius:determineRadius } }),
+
+                    "highlight":new OpenLayers.Style({
+                        pointRadius:"${radius}",
+                        fillColor:"#0015FF",
+                        strokeColor:"#333",
+                        strokeWidth:4,
+                        fillOpacity:0.7,
+                        graphicZIndex:1
+                    }, { context:{ radius:determineRadius } }),
+
                     "select":new OpenLayers.Style({
                         fillColor:"#66ccff",
                         strokeColor:"#FF0000",
@@ -477,7 +487,7 @@
 
 
             //fix the marker z-index
-            if (this.liveRoutes[routeID]) {
+            if (routeID && this.liveRoutes[routeID]) {
                 this.liveRoutes[routeID].setZIndex(this.markerZIndex);     //these should be above the routes.
                 this.liveRoutes[routeID].redraw();
             }
@@ -612,7 +622,7 @@
         },
 
 
-        _nextAccordionGroupID: 1,
+        _nextAccordionGroupID:1,
 
         /**
          * Takes an array of {layer: null, feature: null} items and
@@ -632,14 +642,17 @@
             var orig = "" +
                 "<div class='accordion-group routeQueryWidget'>" +
                 "    <div class='accordion-heading'>" +
-                "        <a class='accordion-toggle' data-toggle='collapse' data-parent='#routeAccordion' href='#"+collapseGroupID+"'>" +
+
                 "            <!--TITLE SECTION HERE-->" +
-                "            <button class='btn btn-info reverseAddressBtn'><i class='icon-zoom-in'></i> <span class='reverseAddress'>Routes near (checking...) </span> </button>" +
-                "            <span class='badge routeCount'>" + items.length + " <i class=' icon-tasks'></i></span>" +
-//                "            <button class='btn collapseBtn'> <i class='icon-minus'></i> </button> " +
-                "        </a>" +
+                "            <button class='btn btn-info reverseAddressBtn'><i class='icon-zoom-in'></i> " +
+                "              <span class='reverseAddress'>Routes near (checking...) </span>" +
+                "              <span class='badge routeCount'>" + items.length + " <i class=' icon-tasks'></i></span>" +
+                "            </button>" +
+                "        <span data-toggle='collapse' data-parent='#routeAccordion' href='#" + collapseGroupID + "'>" +
+                "            <button class='btn collapseBtn'> <i class='icon-minus'></i> </button> " +
+                "        </span>" +
                 "    </div>" +
-                "    <div id='"+collapseGroupID+"' class='accordion-body collapse'>" +
+                "    <div id='" + collapseGroupID + "' class='accordion-body collapse'>" +
                 "        <div class='accordion-inner'> <!--BODY SECTION HERE-->" +
                 "            <ul class='routeList' ></ul>" +
                 "        </div>" +
@@ -656,12 +669,12 @@
 
             var $collapseBtn = $($node).find('.collapseBtn');
 //            var $collapsibleRegion = $($node).find('.collapse');
-//            $collapseBtn.on('click', function () {
-//                var hidden = $collapseBtn.find('i').hasClass('icon-minus');
-//                $collapseBtn.find('i').toggleClass('icon-plus', hidden);
-//                $collapseBtn.find('i').toggleClass('icon-minus', !hidden);
-//                $collapsibleRegion.collapse(hidden ? 'show' : 'hide');
-//            });
+            $collapseBtn.on('click', function () {
+                var hidden = $collapseBtn.find('i').hasClass('icon-minus');
+                $collapseBtn.find('i').toggleClass('icon-plus', hidden);
+                $collapseBtn.find('i').toggleClass('icon-minus', !hidden);
+                //$collapsibleRegion.collapse(hidden ? 'show' : 'hide');
+            });
 
             //data-toggle='collapse' data-target='ul.collapse'
 
@@ -677,9 +690,14 @@
                     this.panZoomAroundQuery(feature);
                 }, this));
 
+                //on mouseover addresse button, highlight feature
+                var highlightFn = $.proxy(this.highlightFeature, this);
+                $($node).find('.reverseAddressBtn').on("mouseover", function () {
+                    highlightFn(null, feature, "default");
+                });
+
             }, this);
             this.resolvePointToAddress(feature, onAddressResolved);
-
 
 
             if (!items || (items.length == 0)) {
@@ -703,15 +721,17 @@
                         "<div class='route'>" +
                         " <div class='section'> " +
                         "  <div class='title'>" +
-                        "   <span class='short_name'>" + name + "</span>" +
+                        "   <h2 class='short_name'>" + name + "" +
+                        "     <small class='long_name'>" + routeName + "</small>" +
+                        "   </h2>" +
                         "  </div>" +
-                        "  <span class='long_name'>" + routeName + "</span>" +
+
                         "   <div class='controls'>" +
                         "    " +
                         "  <div class='btn-group'>" +
-                        "     <button class='btn btn-info zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
-                        "     <button class='btn buses'><i class='icon-eye-open'></i> Buses</button>" +
-                        "     <button class='btn schedule'><i class='icon-time'></i> Schedule</button>" +
+                        "     <button class='btn btn-large btn-info  zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
+                        "     <button class='btn btn-large buses '><i class='icon-eye-open'></i> Buses</button>" +
+                        "     <button class='btn btn-large schedule'><i class='icon-time'></i> Schedule</button>" +
                         "  </div>" +
                         " </div>" +
 //                        "   <div class='section'>" +
@@ -730,9 +750,7 @@
 
 
                     (function (item, busRouteID) {
-
                         var activeClass = 'btn-success';
-
 
                         $($h).find(".zoom").on("click", function () {
                             //console.debug('zooming to item ', item.feature.attributes.name);
@@ -740,13 +758,33 @@
                             map.zoomToExtent(item.feature.geometry.getBounds());
                         });
                         $($h).find(".buses").on("click", function () {
-//                        console.debug("this clicked ", $(this), this.element);
-//                        console.debug('showing buses for ', item.feature.attributes.name);
+                            //                        console.debug("this clicked ", $(this), this.element);
+                            //                        console.debug('showing buses for ', item.feature.attributes.name);
 
                             var isActive = $(this).hasClass(activeClass);
                             toggleRouteFn(busRouteID, !isActive);
                             $(this).toggleClass(activeClass, !isActive);
                         });
+
+                        $($h).find(".schedule").on("click", function () {
+
+                            //http://www.septa.org/schedules/bus/pdf/090.pdf
+
+                            console.debug('get pdf for route ', busRouteID);
+
+                            //                        console.debug("this clicked ", $(this), this.element);
+                            //                        console.debug('showing buses for ', item.feature.attributes.name);
+
+//                            var isActive = $(this).hasClass(activeClass);
+//                            toggleRouteFn(busRouteID, !isActive);
+//                            $(this).toggleClass(activeClass, !isActive);
+                        });
+
+
+                        //TODO: on schedule click, open in new window
+                        //http://www.septa.org/schedules/bus/pdf/090.pdf
+
+
                         $($h).on("mouseover", function () {
                             highlightFn(busRouteID, item.feature, "select");
                         });

@@ -5,7 +5,9 @@ notes
 	
 	[X] twitter bootstrap?
 	[X] move rendered html off to side bar, wrap under map on small viewport
-	[ ] accordian hide previous point / routes?
+	[x] accordian hide previous point / routes?
+		[ ] add transition plugin?
+		[ ] auto-collapse / expand
 	[ ] popover for bus / something button / map marker? (be sure to also trigger on click)
 	[x] make reverse geocode address clickable to re-zoom to initial drop point
 	

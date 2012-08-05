@@ -76,7 +76,7 @@
 
         onClearClicked:function () {
             //clear all the buttons we've added
-            $("#info .highlighted").html("");
+            $("#routeAccordion").html("");
 
             this.clearMap();
         },
@@ -291,9 +291,11 @@
                     }, { context:{ radius:determineRadius } }),
                     "temporary":new OpenLayers.Style({
                         pointRadius:"${radius}",
-                        fillColor:"#0015FF",
-                        strokeColor:"#333",
+                        fillColor:"#FF6600",
+                        strokeColor:"#FF6600",
                         strokeWidth:2,
+                        strokeDashstyle:'dot',
+                        strokeOpacity:0.75,
                         fillOpacity:0.5,
                         graphicZIndex:1
                     }, { context:{ radius:determineRadius } }),
@@ -610,6 +612,8 @@
         },
 
 
+        _nextAccordionGroupID: 1,
+
         /**
          * Takes an array of {layer: null, feature: null} items and
          * redraws an area of the screen to have interactive divs for each
@@ -620,17 +624,46 @@
          * @param items
          */
         createSelectionDivs:function (feature, items) {
-            var $root = $("#info .highlighted");
+            var $root = $("#routeAccordion");
             var map = this.map;
 
-            var orig = "<div>" +
-                "<span class='reverseAddress'>Routes near (checking...) </span>" +
-                "<span class='badge badge-info'>" + items.length + "</span>" +
-                "<ul> </ul></div>";
+            var collapseGroupID = "collapse_" + this._nextAccordionGroupID++;
+
+            var orig = "" +
+                "<div class='accordion-group routeQueryWidget'>" +
+                "    <div class='accordion-heading'>" +
+                "        <a class='accordion-toggle' data-toggle='collapse' data-parent='#routeAccordion' href='#"+collapseGroupID+"'>" +
+                "            <!--TITLE SECTION HERE-->" +
+                "            <button class='btn btn-info reverseAddressBtn'><i class='icon-zoom-in'></i> <span class='reverseAddress'>Routes near (checking...) </span> </button>" +
+                "            <span class='badge routeCount'>" + items.length + " <i class=' icon-tasks'></i></span>" +
+//                "            <button class='btn collapseBtn'> <i class='icon-minus'></i> </button> " +
+                "        </a>" +
+                "    </div>" +
+                "    <div id='"+collapseGroupID+"' class='accordion-body collapse'>" +
+                "        <div class='accordion-inner'> <!--BODY SECTION HERE-->" +
+                "            <ul class='routeList' ></ul>" +
+                "        </div>" +
+                "    </div>" +
+                "</div>";
+
 
             //better way to create and append a div, while retaining a reference to it?
             var $node = $(orig);
             $($node).appendTo($root);
+            var $list = $($node).find(".routeList");
+            $("#" + collapseGroupID).collapse('toggle');
+
+
+            var $collapseBtn = $($node).find('.collapseBtn');
+//            var $collapsibleRegion = $($node).find('.collapse');
+//            $collapseBtn.on('click', function () {
+//                var hidden = $collapseBtn.find('i').hasClass('icon-minus');
+//                $collapseBtn.find('i').toggleClass('icon-plus', hidden);
+//                $collapseBtn.find('i').toggleClass('icon-minus', !hidden);
+//                $collapsibleRegion.collapse(hidden ? 'show' : 'hide');
+//            });
+
+            //data-toggle='collapse' data-target='ul.collapse'
 
             var onAddressResolved = $.proxy(function (addresses) {
                 if (!addresses) {
@@ -638,17 +671,16 @@
                 }
 
                 var first = addresses.address;//[0];
-                var $addressNode = $($node).find('.reverseAddress');
-                var addressHtml = "<button class='btn'><i class='icon-zoom-in'></i> " +  first.Address;
 
-                $addressNode.html(addressHtml);
-                $addressNode.on('click', $.proxy(function() {
+                $($node).find('.reverseAddress').html(first.Address);
+                $($node).find('.reverseAddressBtn').on('click', $.proxy(function () {
                     this.panZoomAroundQuery(feature);
                 }, this));
+
             }, this);
             this.resolvePointToAddress(feature, onAddressResolved);
 
-            var $list = $($node).find("ul");
+
 
             if (!items || (items.length == 0)) {
                 var h = "<divNo routes found nearby</div>";
@@ -680,8 +712,8 @@
                         "     <button class='btn btn-info zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
                         "     <button class='btn buses'><i class='icon-eye-open'></i> Buses</button>" +
                         "     <button class='btn schedule'><i class='icon-time'></i> Schedule</button>" +
-                        "     </div>" +
-                        "   </div>" +
+                        "  </div>" +
+                        " </div>" +
 //                        "   <div class='section'>" +
 //                        "    <span class='title'>Schedule</span>" +
 //                        "    <div class='schedule'>loading...</div>" +

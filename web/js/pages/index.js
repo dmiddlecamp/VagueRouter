@@ -121,6 +121,7 @@
             }
 
             this.clearAllLiveRoutes();
+            this.clearAllRouteStops()
         },
 
 
@@ -234,7 +235,7 @@
                 pointRadius:10
             };
 
-           var accuracyValue = this.convertTo(e.position.coords.accuracy, 'm', this.mapUnitsForConverting);
+            var accuracyValue = this.convertTo(e.position.coords.accuracy, 'm', this.mapUnitsForConverting);
 
 
             var layer = this.layers.accuracyBubbles;
@@ -582,6 +583,16 @@
                 }
             }
         },
+        clearAllRouteStops:function () {
+            for (var id in this.routeStopsLayers) {
+                var layer = this.routeStopsLayers[id];
+                if (layer) {
+                    this.map.removeLayer(layer);
+                }
+            }
+            this.routeStopsLayers = {};
+
+        },
 
         toggleLiveRoute:function (routeID, active) {
             if (!active) {
@@ -650,14 +661,23 @@
             return marker;
         },
 
+        createStopMarker:function (bus) {
+            var size = new OpenLayers.Size(26, 26);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+            //var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h / 2 ));
+
+            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+            var marker = new OpenLayers.Marker(new OpenLayers.LonLat(parseFloat(bus.lng), parseFloat(bus.lat)), icon);
+
+            return marker;
+        },
+
         onLiveRouteLoaded:function (routeID, data) {
 //            console.debug('got back ', routeID, data);
 
             if (data && (data.bus)) {
 
                 var layer = new OpenLayers.Layer.Markers(routeID);
-
-
                 this.liveRoutes[routeID] = layer;
                 this.map.addLayer(layer);
                 layer.setZIndex(this.markerZIndex);     //these should be above the routes.
@@ -711,6 +731,69 @@
             }
             var paddedNum = this.padLeft(routeNum, '0', 3);
             return baseURL + paddedNum + ".pdf";
+        },
+
+        toggleRouteStops:function (id, feature, wasActive) {
+            if (wasActive) {
+                if (this.routeStopsLayers[id]) {
+                    var layer = this.routeStopsLayers[id];
+                    if (layer) {
+                        this.map.removeLayer(layer);
+                        this.routeStopsLayers[id] = null;
+                        delete this.routeStopsLayers[id];
+                    }
+                }
+            }
+            else {
+                $.ajax({
+                    url:"http://www3.septa.org/hackathon/Stops/?req1=" + id,
+                    dataType:"jsonp",
+                    success:$.proxy(function (data) {
+                        this.onRouteStopsLoaded(id, data, feature);
+                    }, this)
+                });
+
+            }
+        },
+
+        routeStopsLayers:{}, //TODO: Clear
+        onRouteStopsLoaded:function (id, data, feature) {
+            if (this.routeStopsLayers[id]) {
+                this.map.removeLayer(this.routeStopsLayers[id]);
+                delete this.routeStopsLayers[id];
+            }
+
+            var layer = new OpenLayers.Layer.Markers("Stops_" + id);
+            this.routeStopsLayers[id] = layer;
+            this.map.addLayer(layer);
+            layer.setZIndex(this.markerZIndex);
+
+
+            var distanceThreshold = this.bufferMapUnits * 2;
+            var inRange = function (src, dest) {
+                var dist = 0;
+                if (!src.geometry) {
+                    dist = src.distanceTo(dest.geometry)
+                }
+                else {
+                    dist = src.geometry.distanceTo(dest.geometry);
+                }
+                //console.debug(src, dest, ' distance was ', dist);
+                return (dist <= distanceThreshold)
+            };
+
+            for (var idx in data) {
+                var stop = data[idx];
+
+                var geom = new OpenLayers.Geometry.Point(parseFloat(stop.lng), parseFloat(stop.lat));
+                //console.debug('geom in range of feature? ', geom, feature);
+                if (inRange(geom, feature)) {
+
+                    var marker = this.createStopMarker(stop);
+                    layer.addMarker(marker);
+                }
+            }
+
         },
 
 
@@ -828,6 +911,7 @@
                         "     <button class='btn btn-medium btn-info  zoom'><i class='icon-zoom-in'></i> Zoom</button>" +
                         "     <button class='btn btn-medium buses '><i class='icon-eye-open'></i> Buses</button>" +
                         "     <button class='btn btn-medium schedule'><i class='icon-time'></i> Schedule</button>" +
+                        "     <button class='btn btn-medium stops'><i class='icon-time'></i> Stops</button>" +
                         "  </div>" +
                         " </div>" +
                         " </div>" +
@@ -839,7 +923,9 @@
 
                     var highlightFn = $.proxy(this.highlightFeature, this),
                         toggleRouteFn = $.proxy(this.toggleLiveRoute, this),
-                        getScheduleURLFn = $.proxy(this.getRouteScheduleURL, this);
+                        getScheduleURLFn = $.proxy(this.getRouteScheduleURL, this),
+                        toggleStopsFn = $.proxy(this.toggleRouteStops, this)
+                        ;
 
 
                     (function (item, busRouteID) {
@@ -861,10 +947,11 @@
                             var url = getScheduleURLFn(busRouteID);
                             window.open(url, '_blank')
                         });
-
-
-                        //TODO: on schedule click, open in new window
-                        //http://www.septa.org/schedules/bus/pdf/090.pdf
+                        $($h).find(".stops").on("click", function () {
+                            var isActive = $(this).hasClass(activeClass);
+                            toggleStopsFn(busRouteID, feature, isActive);
+                            $(this).toggleClass(activeClass, !isActive);
+                        });
 
 
                         $($h).on("mouseover", function () {

@@ -424,6 +424,15 @@
 
         createBusMarker:function (bus) {
 
+            //BlockID"3128"
+            //Direction"NorthBound"
+            //Offset"8"
+            //VehicleID"5667"
+            //destination"Chestnut Hill"
+            //label"5667"
+            //lat"39.993626"
+            //lng"-75.147606"
+
             var size = new OpenLayers.Size(21, 25);
             var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
             //TODO: Change icon / cache icon?

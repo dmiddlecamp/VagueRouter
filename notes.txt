@@ -13,4 +13,18 @@ notes
 		[ ] zoom to bounds after second point?
 		[X] highlight on mouseover
 		[X] bring selected route to the top of the z-index
+		[ ] clear live buses on map clear
+		[ ] update buses periodically?
+		[ ] get bus schedules
+		[ ] add popup feature for bus markers
+		[ ] update bus markers (northbound, eastbound, etc... (ARROWS?  Ooo!))
+		[ ] jump to current location button?
+		
+	pipedream goals:
+		[ ] mobile app friendly
+		[ ] less heavy usage on the map, spatial query for route intersection?
+		
+	functions I would add, if I had a back-end:
+		[ ] checkbox for 'only show routes that have buses headed towards me?'
+		
 

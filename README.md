@@ -8,3 +8,8 @@ I left a copy of it running here: http://middle.camp/septa/
 Enjoy! :)
 
 Please contact me for a commercial license if you want to use it that way.
+
+
+Video of my super-awkward presentation of this app from that hackathon:
+
+https://www.youtube.com/watch?v=fAZCmvwZMgs
